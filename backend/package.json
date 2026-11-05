@@ -1,0 +1,47 @@
+{
+  "name": "@codekita/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CodeKita backend — NestJS + Fastify",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nest start --watch --preserveWatchOutput",
+    "build": "tsc -p tsconfig.json",
+    "start": "cross-env NODE_ENV=production node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed"
+  },
+  "dependencies": {
+    "@fastify/helmet": "^13.2.0",
+    "@fastify/rate-limit": "^11.2.1",
+    "@fastify/static": "^10.1.2",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-fastify": "^11.0.0",
+    "@nestjs/swagger": "^11.3.2",
+    "@nestjs/terminus": "^12.0.0",
+    "@prisma/client": "^6.5.0",
+    "argon2": "^0.45.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "fastify": "^5.2.1",
+    "pino": "^9.7.0",
+    "rxjs": "^7.8.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@fastify/cors": "^11.3.1",
+    "@nestjs/cli": "^12.0.11",
+    "@nestjs/testing": "^11.0.0",
+    "@types/node": "^22.13.0",
+    "cross-env": "^7.0.3",
+    "prisma": "^6.5.0",
+    "typescript": "~5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
