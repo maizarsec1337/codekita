@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,6 +30,7 @@ type LoginForm = z.infer<typeof schema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { login, isLoading } = useAuth();
   const [serverError, setServerError] = useState("");
@@ -44,7 +45,8 @@ export function LoginPage() {
     setServerError("");
     const result = await login(data.identifier, data.password);
     if (result.ok) {
-      navigate("/dashboard");
+      const from = (location.state as { from?: string } | null)?.from;
+      navigate(from?.startsWith("/") && !from.startsWith("//") ? from : "/dashboard", { replace: true });
     } else {
       const err = result.error as ApiError;
       setServerError(
@@ -78,6 +80,7 @@ export function LoginPage() {
               <Input
                 id="identifier"
                 placeholder="name@example.com or username"
+                autoComplete="username"
                 {...register("identifier")}
                 disabled={isLoading}
               />
@@ -90,6 +93,7 @@ export function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 {...register("password")}
                 disabled={isLoading}
               />

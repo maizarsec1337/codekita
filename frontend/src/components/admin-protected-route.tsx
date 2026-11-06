@@ -1,6 +1,6 @@
 "use client";
 
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -10,7 +10,6 @@ export function AdminProtectedRoute({
   children: React.ReactNode;
 }) {
   const { user, isLoading } = useAuth();
-  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -21,15 +20,13 @@ export function AdminProtectedRoute({
   }
 
   if (!user) {
-    navigate("/login", { replace: true });
-    return null;
+    return <Navigate to="/login" replace state={{ from: "/admin-dashboard" }} />;
   }
 
   // Check if user has admin role
   const hasAdminRole = user.roles.includes("ADMIN") || user.roles.includes("SUPER_ADMIN");
   if (!hasAdminRole) {
-    navigate("/dashboard", { replace: true });
-    return null;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

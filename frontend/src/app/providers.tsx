@@ -11,6 +11,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const setLoading = useAuthStore((state) => state.setLoading);
 
   useEffect(() => {
+    try { document.documentElement.dataset.reducedMotion = localStorage.getItem("ck-reduced-motion") ?? "false"; } catch { /* Storage may be unavailable. */ }
     let cancelled = false;
     setLoading(true);
     (async () => {

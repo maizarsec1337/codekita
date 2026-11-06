@@ -8,15 +8,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-blue-600 text-white hover:bg-blue-700",
-        destructive:
-          "bg-red-600 text-white hover:bg-red-700",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        default: "bg-codekita-primary text-codekita-primary-foreground hover:bg-codekita-primary/90",
+        destructive: "bg-codekita-error text-white hover:bg-codekita-error/90",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-blue-600 underline-offset-4 hover:underline",
+        link: "text-codekita-primary underline-offset-4 hover:underline",
+        codekita: "bg-codekita-primary text-codekita-primary-foreground hover:bg-codekita-primary/90 shadow-ck-glow",
+        codekitaOutline: "border border-codekita-border bg-codekita-surface hover:bg-codekita-surface/80 hover:text-codekita-text-primary",
+        codekitaGhost: "hover:bg-codekita-surface/50 hover:text-codekita-text-primary",
+        codekitaSecondary: "bg-codekita-secondary text-codekita-secondary-foreground hover:bg-codekita-secondary/90",
+        codekitaPurple: "bg-codekita-purple text-codekita-purple-foreground hover:bg-codekita-purple/90",
       },
       size: {
         default: "h-10 px-4 py-2",

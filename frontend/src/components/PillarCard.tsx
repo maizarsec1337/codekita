@@ -3,8 +3,7 @@
  * Displays the three main pillars of the platform
  */
 
-import { useState } from 'react';
-import { Pillar, LearningPath } from './types';
+import type { Pillar, LearningPath } from '../types';
 
 interface PillarCardProps {
   pillar: Pillar;
@@ -13,7 +12,6 @@ interface PillarCardProps {
 }
 
 export const PillarCard: React.FC<PillarCardProps> = ({ pillar, paths, onSelect }) => {
-  const [expanded, setExpanded] = useState(false);
 
   const pillarData: Record<Pillar, { title: string; description: string; color: string }> = {
     programming: {
@@ -26,7 +24,7 @@ export const PillarCard: React.FC<PillarCardProps> = ({ pillar, paths, onSelect 
       description: 'Learn information security, vulnerability analysis, and legal system protection',
       color: '#EF4444',
     },
-    aiengineering: {
+    'ai-engineering': {
       title: 'AI Engineering',
       description: 'Develop and integrate artificial intelligence in modern technology systems',
       color: '#8B5CF6',

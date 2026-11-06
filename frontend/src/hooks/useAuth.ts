@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/stores/auth.store";
 import { api } from "@/lib/api";
 import type { SessionPayload } from "@codekita/shared";
+import { queryClient } from "@/lib/queryClient";
 
 export function useAuth() {
   const { user, isLoading, setUser, setLoading } = useAuthStore();
@@ -9,6 +10,7 @@ export function useAuth() {
     setLoading(true);
     try {
       const { user: u } = (await api.auth.login(email, password)) as { user: SessionPayload };
+      queryClient.clear();
       setUser(u as SessionPayload);
       return { ok: true };
     } catch (error) {
@@ -22,6 +24,7 @@ export function useAuth() {
     setLoading(true);
     try {
       const { user: u } = (await api.auth.register(email, password, firstName, lastName)) as { user: SessionPayload };
+      queryClient.clear();
       setUser(u as SessionPayload);
       return { ok: true };
     } catch (error) {
@@ -34,9 +37,8 @@ export function useAuth() {
   const logout = async () => {
     try {
       await api.auth.logout();
-    } catch {
-      // ignore logout errors — clear local state regardless
-    }
+    } catch (error) { throw error; }
+    queryClient.clear();
     setUser(null);
   };
 

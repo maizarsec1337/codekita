@@ -113,7 +113,7 @@ export class AuthService {
   async login(identifier: string, password: string, ipAddress?: string, userAgent?: string) {
     // Support login with either email or username (both stored in email column)
     const user = await this.prisma.user.findUnique({
-      where: { email: identifier },
+      where: { email: identifier.includes("@") ? identifier.toLowerCase() : identifier },
     });
 
     if (!user || !user.passwordHash) {

@@ -1,51 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    color-scheme: dark;
+    --font-sans: "Inter";
+    --font-mono: "JetBrains Mono";
+    /* CodeKita premium dark mode design tokens */
+    --ck-bg: 9 13 19;           /* #090D13 */
+    --ck-surface: 18 25 34;     /* #121922 */
+    --ck-surface-elevated: 26 36 48; /* #1A2430 */
+    --ck-border: 41 52 67;      /* #293443 */
+    --ck-primary: 184 243 74;   /* #B8F34A */
+    --ck-primary-foreground: 9 13 19;
+    --ck-secondary: 54 201 232; /* #36C9E8 */
+    --ck-secondary-foreground: 9 13 19;
+    --ck-purple: 167 139 250;   /* #A78BFA */
+    --ck-purple-foreground: 9 13 19;
+    --ck-text-primary: 243 246 250; /* #F3F6FA */
+    --ck-text-secondary: 154 168 186; /* #9AA8BA */
+    --ck-success: 34 197 94;
+    --ck-warning: 234 179 8;
+    --ck-error: 239 68 68;
+
+    /* shadcn/ui compatibility */
+    --background: var(--ck-bg);
+    --foreground: var(--ck-text-primary);
+    --card: var(--ck-surface);
+    --card-foreground: var(--ck-text-primary);
+    --popover: var(--ck-surface-elevated);
+    --popover-foreground: var(--ck-text-primary);
+    --primary: var(--ck-primary);
+    --primary-foreground: var(--ck-primary-foreground);
+    --secondary: var(--ck-surface-elevated);
+    --secondary-foreground: var(--ck-text-primary);
+    --muted: var(--ck-surface);
+    --muted-foreground: var(--ck-text-secondary);
+    --accent: var(--ck-surface-elevated);
+    --accent-foreground: var(--ck-text-primary);
+    --destructive: var(--ck-error);
+    --destructive-foreground: var(--ck-text-primary);
+    --border: var(--ck-border);
+    --input: var(--ck-border);
+    --ring: var(--ck-primary);
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 221.2 83.2% 53.3%;
+    --background: var(--ck-bg);
+    --foreground: var(--ck-text-primary);
+    --card: var(--ck-surface);
+    --card-foreground: var(--ck-text-primary);
+    --popover: var(--ck-surface-elevated);
+    --popover-foreground: var(--ck-text-primary);
+    --primary: var(--ck-primary);
+    --primary-foreground: var(--ck-primary-foreground);
+    --secondary: var(--ck-surface-elevated);
+    --secondary-foreground: var(--ck-text-primary);
+    --muted: var(--ck-surface);
+    --muted-foreground: var(--ck-text-secondary);
+    --accent: var(--ck-surface-elevated);
+    --accent-foreground: var(--ck-text-primary);
+    --destructive: var(--ck-error);
+    --destructive-foreground: var(--ck-text-primary);
+    --border: var(--ck-border);
+    --input: var(--ck-border);
+    --ring: var(--ck-primary);
   }
 }
 
@@ -53,8 +75,58 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+    min-width: 320px;
+    font-family: "Inter", system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground font-semibold tracking-tight;
+  }
+  .font-mono {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+  }
 }
+
+@layer components {
+  .glass-panel {
+    @apply bg-codekita-surface/80 backdrop-blur-md border border-codekita-border/50;
+  }
+  .glass-panel-elevated {
+    @apply bg-codekita-surface-elevated/90 backdrop-blur-md border border-codekita-border;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  .page-container { @apply mx-auto w-full max-w-7xl px-5 sm:px-8; }
+  .panel { @apply min-w-0 rounded-2xl border border-border bg-card; }
+  .eyebrow { @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-codekita-primary; }
+  .muted { @apply text-sm leading-relaxed text-muted-foreground; }
+  .section-heading { @apply text-3xl font-semibold tracking-tight sm:text-4xl; }
+  .academy-grid {
+    background-image: linear-gradient(rgb(var(--ck-border) / .25) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--ck-border) / .25) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .field { @apply w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20; }
+  .lesson-content { @apply space-y-5 text-base leading-8 text-muted-foreground; overflow-wrap: anywhere; }
+  .lesson-content h2 { @apply pt-5 text-2xl text-foreground; scroll-margin-top: 90px; }
+  .lesson-content h3 { @apply pt-3 text-xl text-foreground; }
+}
+
+:focus-visible { outline: 2px solid rgb(var(--ck-primary)); outline-offset: 4px; }
+::selection { background: rgb(var(--ck-primary) / .25); color: rgb(var(--ck-text-primary)); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+@media print { nav, header, footer, .no-print { display: none !important; } body { background: white; color: black; } }
+html[data-reduced-motion="true"] { scroll-behavior: auto; }
+html[data-reduced-motion="true"] *, html[data-reduced-motion="true"] *::before, html[data-reduced-motion="true"] *::after { animation: none !important; transition: none !important; }

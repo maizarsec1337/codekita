@@ -3,7 +3,7 @@
  * Sample quizzes for each learning path with questions, options, and scoring
  */
 
-import { Quiz, QuizQuestion, QuizResult, ProgressRecord, User } from './types';
+import type { Quiz, QuizResult } from './types';
 
 // Programming Quiz: Full-Stack Web Development
 export const programmingQuiz: Quiz = {

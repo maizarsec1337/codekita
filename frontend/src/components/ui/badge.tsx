@@ -7,12 +7,18 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-blue-600 text-white hover:bg-blue-700",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "bg-red-600 text-white hover:bg-red-700",
-        outline: "text-foreground border",
+        default: "bg-codekita-primary text-codekita-primary-foreground",
+        secondary: "bg-codekita-surface text-codekita-text-primary border codekita-border",
+        destructive: "bg-codekita-error text-white",
+        outline: "text-codekita-text-primary border codekita-border",
+        codekita: "bg-codekita-primary text-codekita-primary-foreground",
+        codekitaSecondary: "bg-codekita-secondary text-codekita-secondary-foreground",
+        codekitaPurple: "bg-codekita-purple text-codekita-purple-foreground",
+        codekitaSuccess: "bg-codekita-success text-white",
+        codekitaWarning: "bg-codekita-warning text-white",
+        codekitaError: "bg-codekita-error text-white",
+        codekitaOutline: "text-codekita-text-primary border codekita-border",
+        codekitaSubtle: "bg-codekita-surface/50 text-codekita-text-secondary border codekita-border/50",
       },
     },
     defaultVariants: { variant: "default" },

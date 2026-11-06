@@ -1,30 +1,6 @@
 import { Link } from "react-router-dom";
-
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import { Logo } from "@/components/academy/shared";
 export function Footer() {
-  return (
-    <footer className="border-t bg-muted/30 text-muted-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold">
-              CK
-            </div>
-            <span className="font-semibold">CodeKita</span>
-          </div>
-          <div className="flex gap-4 text-sm">
-            <Link to="/" className="hover:text-foreground">
-              Home
-            </Link>
-            <Link to="/courses" className="hover:text-foreground">
-              Courses
-            </Link>
-          </div>
-          <p className="text-xs">
-            CodeKita is an educational technology platform. Course content is
-            populated by the platform catalog.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
+  return <footer className="border-t border-border bg-card/40"><div className="page-container py-12"><div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]"><div><Logo /><p className="muted mt-5 max-w-sm">A place for curious minds and future engineers.<br />Learn deliberately. Build confidently.</p><p className="mt-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground"><ShieldCheck size={14} />Ethical learning. Real engineering.</p></div><div><h2 className="mb-4 text-sm">The academy</h2><div className="flex flex-col items-start gap-3 text-sm text-muted-foreground">{[["Learning paths", "/paths"], ["Programming", "/paths?academy=programming"], ["Cybersecurity", "/paths?academy=cybersecurity"], ["AI engineering", "/paths?academy=ai"]].map(([name, url]) => <Link key={url} to={url} className="hover:text-primary">{name}</Link>)}</div></div><div><h2 className="mb-4 text-sm">Your journey</h2><div className="flex flex-col items-start gap-3 text-sm text-muted-foreground">{[["Practice labs", "/labs"], ["Leaderboard", "/leaderboard"], ["My learning", "/dashboard/my-learning"], ["Join CodeKita", "/register"]].map(([name, url]) => <Link key={url} to={url} className="flex items-center gap-2 hover:text-primary">{name}<ArrowUpRight size={12} /></Link>)}</div></div></div><div className="mt-12 flex flex-wrap justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground"><p>© {new Date().getFullYear()} CodeKita Academy. All rights reserved.</p><p>Built for the next generation of engineers.</p></div></div></footer>;
 }

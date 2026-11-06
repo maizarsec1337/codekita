@@ -14,7 +14,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "prisma db seed"
+    ,"admin:grant": "node prisma/grant-admin.mjs"
   },
+  "prisma": { "seed": "node prisma/seed.mjs" },
   "dependencies": {
     "@fastify/helmet": "^13.2.0",
     "@fastify/rate-limit": "^11.2.1",

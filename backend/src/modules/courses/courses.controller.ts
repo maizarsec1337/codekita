@@ -1,5 +1,6 @@
 import { Controller, Get, Query, ServiceUnavailableException } from "@nestjs/common";
 import { CoursesService } from "./courses.service";
+import { IsPublic } from "../../common/decorators/is-public.decorator";
 import {
   courseQuerySchema,
   parseCoursesResponse,
@@ -16,6 +17,7 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
+  @IsPublic()
   async findAll(@Query() query: unknown) {
     const parsed = courseQuerySchema.parse(query);
     try {

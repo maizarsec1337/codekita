@@ -3,10 +3,11 @@
  * Interactive quiz for assessments and knowledge testing
  */
 
-import { Quiz, QuizQuestion, QuizResult } from './types';
+import * as React from 'react';
+import type { Quiz as QuizData, QuizResult } from '../types';
 
 interface QuizProps {
-  quiz: Quiz;
+  quiz: QuizData;
   onAnswer: (questionId: string, answer: string | number) => void;
   onComplete: (result: QuizResult) => void;
 }
@@ -48,12 +49,12 @@ export const Quiz: React.FC<QuizProps> = ({ quiz, onAnswer, onComplete }) => {
     
     quiz.questions.forEach((question) => {
       const userAnswer = state.answers[question.id];
-      if (userAnswer === question.correctAnswer) {
+      if (String(userAnswer).trim().toLowerCase() === String(question.correctAnswer).trim().toLowerCase()) {
         correct++;
       }
     });
 
-    const score = Math.round((correct / totalQuestions) * 100);
+    const score = totalQuestions ? Math.round((correct / totalQuestions) * 100) : 0;
     const passed = score >= quiz.passingScore;
 
     const result: QuizResult = {
@@ -66,12 +67,12 @@ export const Quiz: React.FC<QuizProps> = ({ quiz, onAnswer, onComplete }) => {
       passed,
     };
 
+    setState((previous) => ({ ...previous, completed: true, score }));
     onComplete(result);
   };
 
-  if (state.currentQuestion >= totalQuestions) {
-    return completeQuiz();
-  }
+  if (!totalQuestions) return <p>No questions are available.</p>;
+  if (state.completed) return <p role="status">Practice score: {state.score}% · Preview only; this does not award server progress.</p>;
 
   const currentQuestion = quiz.questions[state.currentQuestion];
 
@@ -82,7 +83,7 @@ export const Quiz: React.FC<QuizProps> = ({ quiz, onAnswer, onComplete }) => {
         <p className="text-gray-400">{currentQuestion.question}</p>
       </div>
 
-      {currentQuestion.type === 'multiple-choice' && currentQuestion.options?.length > 0 ? (
+      {currentQuestion.type === 'multiple-choice' && (currentQuestion.options?.length ?? 0) > 0 ? (
         <div className="quiz-options space-y-2">
           {currentQuestion.options!.map((option, index) => (
             <button
@@ -96,6 +97,8 @@ export const Quiz: React.FC<QuizProps> = ({ quiz, onAnswer, onComplete }) => {
             </button>
           ))}
         </div>
+      ) : currentQuestion.type !== 'true-false' ? (
+        <textarea aria-label="Practice answer" className="field" value={state.answers[currentQuestion.id] ?? ''} onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)} />
       ) : (
         <div className="quiz-true-false space-y-4">
           <button

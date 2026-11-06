@@ -85,6 +85,7 @@ export function RegisterPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="name@example.com"
                 {...register("email")}
                 disabled={isLoading}
@@ -98,6 +99,7 @@ export function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 {...register("password")}
                 disabled={isLoading}
               />

@@ -13,6 +13,7 @@ import fastifyStatic from "@fastify/static";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Env } from "@codekita/shared";
+import { cookies, validCsrf } from "./common/security";
 
 async function bootstrap() {
   const logger = new PinoLogger();
@@ -29,6 +30,15 @@ async function bootstrap() {
   const nodeEnv = configService.get<Env["NODE_ENV"]>("NODE_ENV", "development");
 
   const fastify = app.getHttpAdapter().getInstance();
+  fastify.addHook("onRequest", async (request, reply) => {
+    if (request.url.startsWith("/api/")) reply.header("Cache-Control", "no-store");
+    if (!["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) return;
+    const origin = request.headers.origin;
+    const token = cookies(request.headers.cookie).csrf_token;
+    if ((origin && origin !== corsOrigin) || !validCsrf(token, request.headers["x-csrf-token"], configService.getOrThrow<string>("SESSION_SECRET"))) {
+      return reply.code(403).send({ statusCode: 403, message: "CSRF validation failed. Refresh and try again.", error: "Forbidden", timestamp: new Date().toISOString() });
+    }
+  });
 
   // Security headers (Fastify Helmet)
   await fastify.register(fastifyHelmet as any, {

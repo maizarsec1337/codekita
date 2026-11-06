@@ -18,18 +18,24 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(
+export async function request<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
   const url = `${API_BASE}${path.startsWith("/") ? path : "/" + path}`;
+  const headers = new Headers(init.headers);
+  headers.set("Content-Type", "application/json");
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(init.method ?? "GET")) {
+    // Fetch for each mutation so session rotation and separate tabs cannot leave a stale token.
+    const response = await fetch(`${API_BASE}/auth/csrf-token`, { credentials: "include" });
+    if (!response.ok) throw new ApiError(response.status, null, "Unable to establish a secure request. Try again.");
+    const { token } = await response.json() as { token: string };
+    headers.set("X-CSRF-TOKEN", token);
+  }
   const res = await fetch(url, {
     ...init,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...init.headers,
-    },
+    headers,
   });
 
   if (!res.ok) {

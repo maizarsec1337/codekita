@@ -26,23 +26,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-
-// Seed development admin account (username: admin, password: admin123)
-const adminRole = await prisma.role.findUnique({ where: { name: "ADMIN" } });
-if (adminRole) {
-  const existingAdmin = await prisma.user.findUnique({ where: { email: "admin@codekita.id" } });
-  if (!existingAdmin) {
-    await prisma.user.create({
-      data: {
-        email: "admin@codekita.id",
-        passwordHash: "$2b$10$NqH5yLPro8x1yw/92u34Vu6OQJ/sd3fHKxDx.Q.R1YKw2ZAuUf.k6",
-        isActive: true,
-        roles: {
-          create: { roleId: adminRole.id }
-        }
-      },
-    });
-    console.log("Seeded development admin account");
-  }
-}
   });

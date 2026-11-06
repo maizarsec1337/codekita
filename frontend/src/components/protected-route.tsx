@@ -1,6 +1,6 @@
 "use client";
 
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -10,7 +10,7 @@ export function ProtectedRoute({
   children: React.ReactNode;
 }) {
   const { user, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -21,8 +21,7 @@ export function ProtectedRoute({
   }
 
   if (!user) {
-    navigate("/login", { replace: true });
-    return null;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return <>{children}</>;

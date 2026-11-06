@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "build": "node scripts/unified-build.mjs",
-    "start": "node dist/server/main.js",
+    "start": "node scripts/start.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
     "lint": "pnpm -r run lint && eslint . --max-warnings 0",
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",

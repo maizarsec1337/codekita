@@ -61,7 +61,7 @@ export interface Quiz {
 
 export interface QuizQuestion {
   id: string;
-  type: 'multiple-choice' | 'true-false';
+  type: 'multiple-choice' | 'true-false' | 'fill-blank' | 'coding';
   question: string;
   options?: string[];
   correctAnswer: string | number;

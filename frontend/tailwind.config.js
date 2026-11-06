@@ -1,64 +1,14 @@
-/** @type {import("tailwindcss").Config} */
+/** @type {import('tailwindcss').Config} */
+const color = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 export default {
-  darkMode: ["class"],
-  content: [
-    "./index.html",
-    "./src/**/*.{ts,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        blue: {
-          900: "#0f3d7a",
-          950: "#082547",
-        },
-        navy: {
-          900: "#0f172a",
-          950: "#020617",
-        },
-      },
-      fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-      },
-      borderRadius: {
-        lg: "0.5rem",
-        md: "0.375rem",
-        sm: "0.25rem",
-      },
+  darkMode: ["class"], content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  theme: { extend: {
+    colors: {
+      border: color("border"), input: color("input"), ring: color("ring"), background: color("background"), foreground: color("foreground"),
+      ...Object.fromEntries(["primary", "secondary", "muted", "accent", "popover", "card", "destructive"].map((name) => [name, { DEFAULT: color(name), foreground: color(`${name}-foreground`) }])),
+      codekita: Object.fromEntries(["bg", "surface", "surface-elevated", "border", "primary", "primary-foreground", "secondary", "secondary-foreground", "purple", "purple-foreground", "text-primary", "text-secondary", "success", "warning", "error"].map((name) => [name, color(`ck-${name}`)])),
     },
-  },
-  plugins: [],
-}
+    fontFamily: { sans: ["Inter", "system-ui", "sans-serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"] },
+    boxShadow: { "ck-sm": "0 1px 3px rgb(0 0 0 / .1)", "ck-md": "0 8px 24px rgb(0 0 0 / .15)", "ck-lg": "0 20px 70px rgb(0 0 0 / .3)", "ck-glow": "0 0 18px rgb(var(--ck-primary) / .06)" },
+  } }, plugins: [],
+};

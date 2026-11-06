@@ -27,7 +27,7 @@ model User {
   roles        UserRole[]
   sessions     Session[]
   enrollments  Enrollment[]
-  progress     LearningProgress[]
+  xpEvents     XpEvent[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
@@ -59,6 +59,11 @@ model Course {
   description String?
   coverImage  String?
   isPublished Boolean       @default(false)
+  academy     String        @default("programming")
+  difficulty  String        @default("Beginner")
+  estimatedMinutes Int      @default(60)
+  skills      String[]      @default([])
+  prerequisites String[]    @default([])
   modules     CourseModule[]
   enrollments Enrollment[]
   createdAt   DateTime      @default(now())
@@ -70,6 +75,7 @@ model CourseModule {
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  String   @db.Uuid
   title     String
+  slug      String?  @unique
   order     Int
   lessons   Lesson[]
   createdAt DateTime @default(now())
@@ -81,11 +87,16 @@ model Lesson {
   module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   moduleId    String   @db.Uuid
   title       String
+  slug        String?
+  objectives  String[] @default([])
+  assessment  Json?
   content     String?
   videoUrl    String?
   order       Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  progress    LearningProgress[]
+  @@unique([moduleId, slug])
 }
 
 model Enrollment {
@@ -96,6 +107,7 @@ model Enrollment {
   courseId  String   @db.Uuid
   enrolledAt DateTime @default(now())
   progress  LearningProgress[]
+  certificate Certificate?
   @@unique([userId, courseId])
 }
 
@@ -106,6 +118,28 @@ model LearningProgress {
   lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   lessonId     String   @db.Uuid
   completed    Boolean  @default(false)
+  completedAt  DateTime?
+  notes        String   @default("")
+  bookmarked   Boolean  @default(false)
   updatedAt    DateTime @updatedAt
   @@unique([enrollmentId, lessonId])
+}
+
+model XpEvent {
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @db.Uuid
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventKey  String
+  amount    Int
+  createdAt DateTime @default(now())
+  @@unique([userId, eventKey])
+  @@index([userId, createdAt])
+}
+
+model Certificate {
+  id           String @id @default(uuid()) @db.Uuid
+  enrollmentId String @unique @db.Uuid
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  title        String
+  issuedAt     DateTime @default(now())
 }

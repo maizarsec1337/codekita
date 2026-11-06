@@ -34,6 +34,6 @@ export class CoursesService {
       this.prisma.course.count({ where: { isPublished: true } }),
     ]);
 
-    return buildCoursesResponse({ data: courses, page, limit, total });
+    return buildCoursesResponse({ data: courses.map((course) => ({ ...course, createdAt: course.createdAt.toISOString(), updatedAt: course.updatedAt.toISOString() })), page, limit, total });
   }
 }

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 
 const root = resolve(process.cwd());
@@ -7,7 +7,8 @@ const dist = join(root, "dist");
 
 async function run(command, args, cwd = root) {
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(command, args, { cwd, stdio: "inherit", shell: true });
+    const cli = command === "pnpm" ? process.env.npm_execpath : undefined;
+    const child = cli ? spawn(process.execPath, [cli, ...args], { cwd, stdio: "inherit" }) : spawn(command, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
     child.on("exit", (code) => {
       if (code === 0) resolvePromise();
       else reject(new Error(command + " " + args.join(" ") + " exited with code " + code));
@@ -19,14 +20,7 @@ async function run(command, args, cwd = root) {
 async function main() {
   console.log("=== CodeKita Unified Build ===");
 
-  // Clean dist
-  if (existsSync(dist)) {
-    try {
-      await run("rmdir", ["/s", "/q", dist]);
-    } catch {
-      try { await run("rm", ["-rf", dist]); } catch {}
-    }
-  }
+  // Each compiler owns its output directory. Never recursively delete the root build tree.
   mkdirSync(dist, { recursive: true });
 
   // 1. Build shared package

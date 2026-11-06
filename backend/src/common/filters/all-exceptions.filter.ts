@@ -36,8 +36,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
           : (responsePayload as Record<string, unknown>).message ??
             "Internal server error";
       errorCode = (responsePayload as Record<string, unknown>)?.error as string ?? errorCode;
-    } else if (exception instanceof Error) {
-      message = exception.message;
     }
 
     const isClientError = status >= 400 && status < 500;

@@ -3,16 +3,16 @@
  * Displays a structured learning path with lessons and progress
  */
 
-import { LearningPath, Lesson, Progress, User } from './types';
+import type { LearningPath as LearningPathData, Progress } from '../types';
 
 interface LearningPathProps {
-  path: LearningPath;
+  path: LearningPathData;
   userProgress: Progress | null;
   onLessonSelect: (lessonId: string) => void;
 }
 
 export const LearningPath: React.FC<LearningPathProps> = ({ path, userProgress, onLessonSelect }) => {
-  const completionRate = userProgress
+  const completionRate = userProgress && path.lessons.length
     ? (userProgress.completedLessons.length / path.lessons.length) * 100
     : 0;
   const completedLessons = userProgress?.completedLessons || [];

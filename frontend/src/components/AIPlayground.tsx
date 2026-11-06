@@ -3,7 +3,8 @@
  * Interactive AI model exploration and prompt engineering
  */
 
-import { AIModel, AIPrompt, QuizResult } from './types';
+import * as React from 'react';
+import type { AIModel, AIPrompt } from '../types';
 
 interface AIPlaygroundProps {
   models: AIModel[];

@@ -3,7 +3,7 @@
  * Interactive cybersecurity labs and CTF challenges
  */
 
-import { Vulnerability, CTFChallenge, Flag } from './types';
+import type { Vulnerability, CTFChallenge } from '../types';
 
 interface CybersecurityLabsProps {
   vulnerabilities: Vulnerability[];
@@ -73,9 +73,7 @@ export const CybersecurityLabs: React.FC<CybersecurityLabsProps> = ({
           {ctfChallenges.map((challenge) => (
             <div
               key={challenge.id}
-              className={onChallengeSelect
-                ? 'p-4 rounded hover:bg-gray-50 transition-colors cursor-pointer hover:underline'
-                : 'p-4 rounded hover:bg-gray-50 transition-colors cursor-pointer'}
+               className="p-4 rounded hover:bg-gray-50 transition-colors cursor-pointer hover:underline"
               onClick={() => onChallengeSelect(challenge.id)}
             >
               <div className="flex items-center justify-between mb-2">

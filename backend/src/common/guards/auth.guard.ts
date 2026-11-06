@@ -8,6 +8,7 @@ import { Reflector } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import type { SessionPayload } from "@codekita/shared";
 import { AuthService } from "../../modules/auth/auth.service";
+import { cookies } from "../security";
 
 /**
  * Session-based authentication guard.
@@ -33,7 +34,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<any>();
     const sessionName = this.configService.get<string>("SESSION_NAME", "codekita_session");
 
-    const token = request.cookies?.[sessionName];
+    const token = cookies(request.headers.cookie)[sessionName];
     if (!token) {
       throw new UnauthorizedException("Missing session cookie");
     }
