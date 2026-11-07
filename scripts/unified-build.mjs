@@ -1,47 +1,39 @@
 import { spawn } from "node:child_process";
-import { mkdirSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = resolve(process.cwd());
-const dist = join(root, "dist");
+const root = fileURLToPath(new URL("../", import.meta.url));
+const runtime = join(root, "dist", "runtime");
+const shared = join(runtime, "packages", "shared", "src", "index.js");
 
-async function run(command, args, cwd = root) {
-  return new Promise((resolvePromise, reject) => {
-    const cli = command === "pnpm" ? process.env.npm_execpath : undefined;
-    const child = cli ? spawn(process.execPath, [cli, ...args], { cwd, stdio: "inherit" }) : spawn(command, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
-    child.on("exit", (code) => {
-      if (code === 0) resolvePromise();
-      else reject(new Error(command + " " + args.join(" ") + " exited with code " + code));
-    });
+function run(cli, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [join(root, "node_modules", cli), ...args], { cwd: root, stdio: "inherit" });
     child.on("error", reject);
+    child.on("exit", (code) => code === 0 ? resolve() : reject(new Error(`${cli} exited with code ${code}`)));
   });
 }
 
-async function main() {
-  console.log("=== CodeKita Unified Build ===");
-
-  // Each compiler owns its output directory. Never recursively delete the root build tree.
-  mkdirSync(dist, { recursive: true });
-
-  // 1. Build shared package
-  console.log("\n--- Building shared package ---");
-  await run("pnpm", ["--filter", "@codekita/shared", "build"]);
-
-  // 2. Build frontend (outputs to dist/public via vite.config outDir)
-  console.log("\n--- Building frontend ---");
-  await run("pnpm", ["--filter", "@codekita/frontend", "build"]);
-
-  // 3. Build backend (outputs to dist/server via tsconfig outDir)
-  console.log("\n--- Building backend ---");
-  await run("pnpm", ["--filter", "@codekita/backend", "build"]);
-
-  console.log("\n=== Build complete ===");
-  console.log("Server: " + join(dist, "server"));
-  console.log("Public: " + join(dist, "public"));
+async function rewriteAliases(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = join(directory, entry.name);
+    if (entry.isDirectory()) await rewriteAliases(file);
+    else if (entry.name.endsWith(".js")) {
+      const source = await readFile(file, "utf8");
+      const target = relative(dirname(file), shared).replaceAll("\\", "/");
+      const replacement = target.startsWith(".") ? target : `./${target}`;
+      const updated = source.replaceAll('require("@codekita/shared")', `require(${JSON.stringify(replacement)})`);
+      if (updated !== source) await writeFile(file, updated);
+    }
+  }
 }
 
-main().catch((err) => {
-  console.error("Build failed:", err);
-  process.exit(1);
-});
+await mkdir(runtime, { recursive: true });
+await run("typescript/bin/tsc", ["-p", "tsconfig.json", "--noEmit"]);
+await run("typescript/bin/tsc", ["-p", "tsconfig.server.json"]);
+await rewriteAliases(runtime);
+await writeFile(join(root, "dist", "server.js"), 'require("./runtime/src/server/main.js");\n');
+await run("vite/bin/vite.js", ["build"]);
+console.log("Unified build complete: dist/server.js and dist/index.html");
 

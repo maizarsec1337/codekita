@@ -21,13 +21,16 @@ async function until(fn, timeout = 25000) {
 }
 try {
   await mkdir(artifacts, { recursive: true });
-  server = spawn(process.execPath, [join(root, "dist", "server", "main.js")], { cwd: root, env: { ...process.env, NODE_ENV: "production", PORT: String(port), NODE_PATH: [join(root, "backend", "node_modules"), process.env.NODE_PATH].filter(Boolean).join(delimiter), DATABASE_URL: "postgresql://validation_only@127.0.0.1:1/validation?connect_timeout=1", SESSION_SECRET: randomBytes(32).toString("hex"), CORS_ORIGIN: `http://127.0.0.1:${port}`, ENABLE_SWAGGER: "false" }, stdio: ["ignore", "pipe", "pipe"] });
+  server = spawn(process.execPath, [join(root, "dist", "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "production", PORT: String(port), NODE_PATH: [join(root, "backend", "node_modules"), process.env.NODE_PATH].filter(Boolean).join(delimiter), DATABASE_URL: "postgresql://validation_only@127.0.0.1:1/validation?connect_timeout=1", SESSION_SECRET: randomBytes(32).toString("hex"), CORS_ORIGIN: `http://127.0.0.1:${port}`, ENABLE_SWAGGER: "false" }, stdio: ["ignore", "pipe", "pipe"] });
   server.stdout.on("data", (chunk) => serverLogs.push(chunk.toString())); server.stderr.on("data", (chunk) => serverLogs.push(chunk.toString()));
   await until(async () => (await fetch(`http://127.0.0.1:${port}/api/health`)).ok);
   const csrfDenied = await fetch(`http://127.0.0.1:${port}/api/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: "training@example.test", password: "not-a-real-password" }) });
   assert.equal(csrfDenied.status, 403, "Auth mutations must reject missing CSRF");
   assert.equal((await fetch(`http://127.0.0.1:${port}/api/learning/dashboard`)).status, 401, "Dashboard requires a real session");
   assert.equal((await fetch(`http://127.0.0.1:${port}/api/admin/paths`)).status, 401, "Admin API must require a session");
+  assert.equal((await fetch(`http://127.0.0.1:${port}/runtime/src/server/main.js`)).status, 404, "Server runtime must not be public");
+  assert.equal((await fetch(`http://127.0.0.1:${port}/server.js`)).status, 404, "Server entry must not be public");
+  assert.equal((await fetch(`http://127.0.0.1:${port}/api/no-such-route`)).status, 404, "Unknown API routes must return 404");
   const health = await (await fetch(`http://127.0.0.1:${port}/api/health`)).json(); assert.equal(health.services.database, "disconnected");
   chrome = spawn(chromePath, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${debugPort}`, `--user-data-dir=${chromeProfile}`, "about:blank"], { stdio: "ignore" });
   const tabs = await until(async () => { const response = await fetch(`http://127.0.0.1:${debugPort}/json`); return response.json(); });
@@ -44,6 +47,7 @@ try {
   await send("Runtime.enable"); await send("Page.enable");
   const results = [];
   async function visit(path, width, expected) {
+    console.log(`Checking ${path} at ${width}px`);
     await send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 600 });
     await send("Page.navigate", { url: `http://127.0.0.1:${port}${path}` });
     await until(() => evaluate(`document.readyState === 'complete' && document.body.innerText.includes(${JSON.stringify(expected)})`));
@@ -76,6 +80,13 @@ try {
   await visit("/dashboard", 390, "Sign in");
   await visit("/learn/unavailable/section", 1440, "Sign in");
   assert.equal(errors.length, 0, `Unexpected browser exceptions: ${errors.join("\n")}`);
+  let rateLimited = false;
+  for (let i = 0; i < 110; i++) {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs`);
+    if (response.status === 429) { rateLimited = true; break; }
+  }
+  assert.equal(rateLimited, true, "API requests must still be rate limited");
+  assert.equal((await fetch(`http://127.0.0.1:${port}/login`)).status, 200, "API rate limit must not block the SPA");
   await writeFile(join(artifacts, "browser-report.json"), JSON.stringify({ mode: "production-with-unavailable-test-db", results, runtimeErrors: errors }, null, 2));
   console.log(`PASS: ${results.length} real-Chrome desktop/mobile route checks, CSRF rejection, auth gates, interactive preview, navigation dialog, disabled execution, and no horizontal overflow.`);
   console.log(`Validation artifacts: ${artifacts}`);
@@ -88,4 +99,5 @@ try {
   // Only this script's freshly-created, random temporary browser profile is removed.
   await new Promise((resolvePromise) => setTimeout(resolvePromise, 500));
   await rm(chromeProfile, { recursive: true, force: true, maxRetries: 5 }).catch(() => {});
+  process.exit(process.exitCode ?? 0);
 }
