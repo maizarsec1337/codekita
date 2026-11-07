@@ -3,6 +3,7 @@
 import { Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { isStaticFrontend } from "@/lib/mode";
 
 export function AdminProtectedRoute({
   children,
@@ -10,6 +11,8 @@ export function AdminProtectedRoute({
   children: React.ReactNode;
 }) {
   const { user, isLoading } = useAuth();
+
+  if (isStaticFrontend) return <>{children}</>;
 
   if (isLoading) {
     return (

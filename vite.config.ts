@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => ({
   build: { emptyOutDir: false },
   server: {
     port: 5173,
-    proxy: {
+    strictPort: true,
+    proxy: mode === "static" ? undefined : {
       "/api": {
         target: `http://127.0.0.1:${process.env.PORT ?? loadEnv(mode, __dirname, "").PORT ?? "3000"}`,
         changeOrigin: true,

@@ -4,6 +4,8 @@ import {
   apiErrorSchema,
   type CoursesResponse,
 } from "@codekita/shared";
+import { isStaticFrontend } from "./mode";
+import { demoCourses } from "@/data/static-demo";
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/+$/, "");
 
@@ -22,6 +24,7 @@ export async function request<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  if (isStaticFrontend) throw new ApiError(503, null, "Static demo mode: backend requests are unavailable.");
   const url = `${API_BASE}${path.startsWith("/") ? path : "/" + path}`;
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
@@ -70,6 +73,7 @@ export const api = {
     ),
 
   courses: (params?: { page?: number; limit?: number }) => {
+    if (isStaticFrontend) return Promise.resolve(demoCourses(params?.page, params?.limit));
     const search = params
       ? `?${new URLSearchParams(
           Object.fromEntries(

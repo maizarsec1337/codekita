@@ -35,9 +35,7 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    try {
-      await api.auth.logout();
-    } catch (error) { throw error; }
+    await api.auth.logout();
     queryClient.clear();
     setUser(null);
   };

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { isStaticFrontend } from "@/lib/mode";
 
 type BackendStatus = "ok" | "degraded" | "offline";
 
@@ -9,6 +10,7 @@ export function ApiStatusIndicator() {
   const [status, setStatus] = useState<BackendStatus>("offline");
 
   useEffect(() => {
+    if (isStaticFrontend) return;
     let cancelled = false;
     api
       .health()
@@ -27,7 +29,7 @@ export function ApiStatusIndicator() {
     };
   }, []);
 
-  const config = {
+  const config = isStaticFrontend ? { label: "Static demo", className: "bg-amber-500" } : {
     ok: { label: "Backend online", className: "bg-emerald-500" },
     degraded: { label: "Database unavailable", className: "bg-amber-500" },
     offline: { label: "Backend offline", className: "bg-rose-500" },

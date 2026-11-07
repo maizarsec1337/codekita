@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { CoursesResponse } from "@codekita/shared";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Skeleton } from "@/components/ui";
+import { Link } from "react-router-dom";
+import { isStaticFrontend } from "@/lib/mode";
 
 export function CoursesPage() {
   const [courses, setCourses] = useState<CoursesResponse["data"]>([]);
@@ -94,7 +96,7 @@ export function CoursesPage() {
                 <Badge variant="outline">
                   {course.isPublished ? "Published" : "Draft"}
                 </Badge>
-                <CardTitle>{course.title}</CardTitle>
+                <CardTitle><Link className="hover:text-primary" to={`/paths/${course.slug}`}>{course.title}</Link></CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground line-clamp-2">
@@ -103,6 +105,7 @@ export function CoursesPage() {
                 <p className="mt-2 text-xs text-muted-foreground">
                   {course.slug}
                 </p>
+                {isStaticFrontend && <Link className="mt-4 inline-block text-sm text-primary underline" to={`/paths/${course.slug}`}>View example course</Link>}
               </CardContent>
             </Card>
           ))}

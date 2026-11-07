@@ -8,6 +8,7 @@ import { z } from "zod";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
+import { isStaticFrontend } from "@/lib/mode";
 import {
   Button,
   Card,
@@ -38,10 +39,12 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: LoginForm) => {
+    if (isStaticFrontend) { reset(); setServerError("Demo only: input validated, but no login occurred and nothing was saved."); return; }
     setServerError("");
     const result = await login(data.identifier, data.password);
     if (result.ok) {
@@ -65,22 +68,24 @@ export function LoginPage() {
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>
-            Enter your CodeKita account credentials
+            {isStaticFrontend ? "Demo only — use fictional inputs. No authentication or account is created." : "Enter your CodeKita account credentials"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {serverError && (
-            <div className="mb-4 p-3 rounded-md bg-red-50 text-sm text-red-700 border border-red-100">
+            <div role="status" className="mb-4 p-3 rounded-md bg-red-50 text-sm text-red-700 border border-red-100">
               {serverError}
             </div>
           )}
+          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/dashboard">Explore demo dashboard</Link></Button>}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <fieldset className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="identifier">Identifier</Label>
               <Input
                 id="identifier"
                 placeholder="name@example.com or username"
-                autoComplete="username"
+                autoComplete={isStaticFrontend ? "off" : "username"}
                 {...register("identifier")}
                 disabled={isLoading}
               />
@@ -93,7 +98,7 @@ export function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete={isStaticFrontend ? "off" : "current-password"}
                 {...register("password")}
                 disabled={isLoading}
               />
@@ -102,8 +107,9 @@ export function LoginPage() {
               )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              Sign in
+              {isStaticFrontend ? "Validate demo form" : "Sign in"}
             </Button>
+            </fieldset>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">

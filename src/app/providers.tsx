@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { api } from "@/lib/api";
 import type { SessionPayload } from "@codekita/shared";
 import { ToastProvider } from "@/components/ui/use-toast";
+import { isStaticFrontend } from "@/lib/mode";
 
 export function Providers({ children }: { children: ReactNode }) {
   const setUser = useAuthStore((state) => state.setUser);
@@ -12,6 +13,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try { document.documentElement.dataset.reducedMotion = localStorage.getItem("ck-reduced-motion") ?? "false"; } catch { /* Storage may be unavailable. */ }
+    if (isStaticFrontend) { setUser(null); setLoading(false); return; }
     let cancelled = false;
     setLoading(true);
     (async () => {

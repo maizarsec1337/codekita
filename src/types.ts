@@ -110,7 +110,7 @@ export interface AIModel {
   type: 'classification' | 'regression' | 'generation' | 'clustering';
   framework: 'tensorflow' | 'pytorch' | 'scikit-learn' | 'openai';
   description: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface AIPrompt {

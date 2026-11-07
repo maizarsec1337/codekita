@@ -3,6 +3,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { isStaticFrontend } from "@/lib/mode";
 
 export function ProtectedRoute({
   children,
@@ -11,6 +12,8 @@ export function ProtectedRoute({
 }) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
+
+  if (isStaticFrontend) return <>{children}</>;
 
   if (isLoading) {
     return (

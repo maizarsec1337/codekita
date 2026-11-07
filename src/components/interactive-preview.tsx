@@ -26,7 +26,7 @@ export const InteractivePreview: FC = () => {
           <p className="mb-4">What does journey contain?</p>
 
           <fieldset>
-            {['["LEARN", "BUILD"]', '[\"learn\", \"build\"]', '"LEARN BUILD"'].map(
+            {['["LEARN", "BUILD"]', '["learn", "build"]', '"LEARN BUILD"'].map(
               (option, index) => {
                 const isCorrect = answer === index;
                 return (

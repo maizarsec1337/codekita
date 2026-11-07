@@ -9,11 +9,17 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "dev": "node scripts/dev.mjs",
+    "dev": "vite --mode static --port 5173 --strictPort",
+    "dev:fullstack": "node scripts/dev.mjs",
+    "dev:frontend": "vite --mode static --port 5173 --strictPort",
+    "build:frontend": "vite build --mode static --outDir dist/frontend-static",
+    "typecheck:frontend": "tsc -p tsconfig.json --noEmit",
     "build": "node scripts/unified-build.mjs",
     "start": "node scripts/start.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
+    "test:frontend-browser": "node scripts/static-browser-smoke.mjs",
     "lint": "eslint . --max-warnings 0",
+    "lint:frontend": "eslint --config eslint.frontend.config.mjs src packages/shared/src --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit",
     "test": "vitest run",
     "postinstall": "prisma generate --schema prisma/schema.prisma"
