@@ -4,10 +4,11 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
+import type { Observable } from "rxjs";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  intercept(_context: ExecutionContext, next: CallHandler): any {
+  intercept(_context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle();
   }
 }

@@ -1,6 +1,7 @@
 import { LoggerService } from "@nestjs/common";
 import pino from "pino";
 import type { Logger as PinoBaseLogger } from "pino";
+import { hostname } from "node:os";
 
 /**
  * Sensitive fields are redacted automatically by pino so secrets never reach logs.
@@ -24,28 +25,29 @@ export class PinoLogger implements LoggerService {
     this.logger = pino({
       level: process.env.LOG_LEVEL ?? "info",
       redact: REDACTED_FIELDS,
-      base: { pid: process.pid, hostname: require("os").hostname() },
+      base: { pid: process.pid, hostname: hostname() },
     });
   }
 
-  log(message: any, context?: string): void {
+  log(message: string, context?: string): void {
     this.logger.info({ context }, message);
   }
 
-  error(message: any, trace?: string, context?: string): void {
+  error(message: string | Error | Record<string, unknown>, trace?: string, context?: string): void {
     if (message instanceof Error) this.logger.error({ err: message, context, trace }, message.message);
+    else if (typeof message === "object") this.logger.error({ ...message, context: context ?? message.context, trace });
     else this.logger.error({ context, trace }, message);
   }
 
-  warn(message: any, context?: string): void {
+  warn(message: string, context?: string): void {
     this.logger.warn({ context }, message);
   }
 
-  debug(message: any, context?: string): void {
+  debug(message: string, context?: string): void {
     this.logger.debug({ context }, message);
   }
 
-  verbose(message: any, context?: string): void {
+  verbose(message: string, context?: string): void {
     this.logger.debug({ context }, message);
   }
 

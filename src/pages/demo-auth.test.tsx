@@ -1,16 +1,25 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { ToastProvider } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/stores/auth.store";
+import i18n from "@/lib/i18n";
 
 vi.mock("@/lib/mode", () => ({ isStaticFrontend: true }));
 import { LoginPage } from "./login";
 import { RegisterPage } from "./register";
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+beforeEach(async () => { await i18n.changeLanguage("en"); });
 
 describe("Static demo forms", () => {
+  it("shows Indonesian validation messages without changing the validation rules", async () => {
+    await i18n.changeLanguage("id");
+    useAuthStore.setState({ user: null, isLoading: false });
+    render(<MemoryRouter><ToastProvider><LoginPage /></ToastProvider></MemoryRouter>);
+    fireEvent.click(screen.getByRole("button", { name: "Validasi formulir demo" }));
+    expect(await screen.findByText("Kata sandi harus terdiri dari minimal 8 karakter")).toBeInTheDocument();
+  });
   it.each([
     { name: "login", Page: LoginPage, identifier: "Identifier", confirmation: "no login occurred" },
     { name: "register", Page: RegisterPage, identifier: "Email address", confirmation: "no account was created" },

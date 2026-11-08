@@ -1,29 +1,498 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ArrowUpRight, Check, CheckCircle2, ChevronRight, Code2, GitBranch, Layers3, LockKeyhole, Play, ShieldCheck, Sparkles, Target, Terminal, Users, Zap } from "lucide-react";
-import { academyApi } from "@/lib/academy-api";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { academies, CardSkeletons, DataState, PathCard } from "@/components/academy/shared";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Code2,
+  GitBranch,
+  Layers3,
+  LockKeyhole,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Terminal,
+  Users,
+  Zap,
+} from 'lucide-react';
+import { academyApi } from '@/lib/academy-api';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { academies, CardSkeletons, DataState, PathCard } from '@/components/academy/shared';
+import { cn } from '@/lib/utils';
 
 function LearningPreview() {
   const [answer, setAnswer] = useState<number>();
-  return <div className="panel overflow-hidden"><div className="flex items-center justify-between border-b border-border px-5 py-3"><span className="flex items-center gap-2 font-mono text-xs text-muted-foreground"><Terminal size={15} />interactive-preview.js</span><span className="rounded bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">TRY IT YOURSELF</span></div><div className="grid md:grid-cols-2"><div className="bg-background/50 p-6 sm:p-8"><p className="mb-6 font-mono text-xs text-muted-foreground">01 <span className="ml-4 text-codekita-purple">// Small steps. Real understanding.</span></p><pre className="overflow-x-auto font-mono text-sm leading-8"><code><span className="text-codekita-purple">const</span> skills = [<span className="text-primary">&quot;learn&quot;</span>, <span className="text-primary">&quot;build&quot;</span>];{"\n\n"}<span className="text-codekita-purple">const</span> journey = skills.<span className="text-codekita-secondary">map</span>({"\n"}  skill =&gt; skill.<span className="text-codekita-secondary">toUpperCase</span>(){"\n"});</code></pre><div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole size={13} />Knowledge preview · no code execution</div></div><div className="border-t border-border p-6 sm:p-8 md:border-l md:border-t-0"><p className="eyebrow mb-3">Knowledge check</p><h3 className="mb-5 text-lg">What does journey contain?</h3><fieldset className="space-y-3"><legend className="sr-only">Choose the array produced by map</legend>{['["LEARN", "BUILD"]', '["learn", "build"]', '"LEARN BUILD"'].map((option, index) => <label key={option} className={cn("flex cursor-pointer items-center gap-3 rounded-lg border p-3 font-mono text-xs transition-colors", answer === index ? "border-primary/60 bg-primary/5" : "border-border hover:border-muted-foreground")}><input type="radio" name="preview" checked={answer === index} onChange={() => setAnswer(index)} className="accent-[rgb(var(--ck-primary))]" />{option}</label>)}</fieldset><p className="mt-4 min-h-10 text-xs leading-5 text-muted-foreground" aria-live="polite">{answer === undefined ? "Choose an answer. A little curiosity goes a long way." : answer === 0 ? "Correct! map returns a new array with each string transformed. Preview only — no XP is awarded." : "Not quite. map transforms each item and returns a new array. Try again."}</p></div></div></div>;
+  return (
+    <div className="panel overflow-hidden">
+      <div className="flex items-center justify-between border-b border-border px-5 py-3">
+        <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+          <Terminal size={15} />
+          interactive-preview.js
+        </span>
+        <span className="rounded bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">
+          TRY IT YOURSELF
+        </span>
+      </div>
+      <div className="grid md:grid-cols-2">
+        <div className="bg-background/50 p-6 sm:p-8">
+          <p className="mb-6 font-mono text-xs text-muted-foreground">
+            01{' '}
+            <span className="ml-4 text-codekita-purple">// Small steps. Real understanding.</span>
+          </p>
+          <pre className="overflow-x-auto font-mono text-sm leading-8">
+            <code>
+              <span className="text-codekita-purple">const</span> skills = [
+              <span className="text-primary">&quot;learn&quot;</span>,{' '}
+              <span className="text-primary">&quot;build&quot;</span>];{'\n\n'}
+              <span className="text-codekita-purple">const</span> journey = skills.
+              <span className="text-codekita-secondary">map</span>({'\n'} skill =&gt; skill.
+              <span className="text-codekita-secondary">toUpperCase</span>(){'\n'});
+            </code>
+          </pre>
+          <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
+            <LockKeyhole size={13} />
+            Knowledge preview · no code execution
+          </div>
+        </div>
+        <div className="border-t border-border p-6 sm:p-8 md:border-l md:border-t-0">
+          <p className="eyebrow mb-3">Knowledge check</p>
+          <h3 className="mb-5 text-lg">What does journey contain?</h3>
+          <fieldset className="space-y-3">
+            <legend className="sr-only">Choose the array produced by map</legend>
+            {['["LEARN", "BUILD"]', '["learn", "build"]', '"LEARN BUILD"'].map((option, index) => (
+              <label
+                key={option}
+                className={cn(
+                  'flex cursor-pointer items-center gap-3 rounded-lg border p-3 font-mono text-xs transition-colors',
+                  answer === index
+                    ? 'border-primary/60 bg-primary/5'
+                    : 'border-border hover:border-muted-foreground'
+                )}
+              >
+                <input
+                  type="radio"
+                  name="preview"
+                  checked={answer === index}
+                  onChange={() => setAnswer(index)}
+                  className="accent-[rgb(var(--ck-primary))]"
+                />
+                {option}
+              </label>
+            ))}
+          </fieldset>
+          <p className="mt-4 min-h-10 text-xs leading-5 text-muted-foreground" aria-live="polite">
+            {answer === undefined
+              ? 'Choose an answer. A little curiosity goes a long way.'
+              : answer === 0
+                ? 'Correct! map returns a new array with each string transformed. Preview only — no XP is awarded.'
+                : 'Not quite. map transforms each item and returns a new array. Try again.'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 function HeroWorkspace() {
-  return <div className="relative mx-auto w-full max-w-xl lg:ml-0"><div className="panel relative overflow-hidden shadow-ck-lg"><div className="flex items-center justify-between border-b border-border px-4 py-3"><div className="flex gap-1.5">{[1, 2, 3].map((item) => <span key={item} className="h-2 w-2 rounded-full bg-border" />)}</div><span className="font-mono text-[10px] tracking-wider text-muted-foreground">YOUR ENGINEERING WORKSPACE</span><LockKeyhole size={12} className="text-muted-foreground" /></div><div className="grid grid-cols-[48px_1fr] sm:grid-cols-[58px_1fr]"><div className="flex flex-col items-center gap-5 border-r border-border bg-background/30 py-6">{[Terminal, Layers3, GitBranch, Target].map((Icon, index) => <div key={index} className={cn("rounded-lg p-2", index === 1 ? "bg-primary/10 text-primary" : "text-muted-foreground")}><Icon size={16} /></div>)}</div><div className="min-w-0 p-5 sm:p-7"><div className="mb-6 flex items-center justify-between"><p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Path overview</p><span className="text-[10px] text-muted-foreground">Illustrative preview</span></div><div className="mb-5 flex items-center gap-3"><span className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary"><Code2 size={24} /></span><div><p className="mb-1 text-[10px] text-primary">PROGRAMMING ACADEMY</p><h3 className="text-base sm:text-lg">From curiosity to capability.</h3></div></div><div>{[{ title: "Understand the foundations", description: "Build your mental model", icon: Check, active: false }, { title: "Put knowledge into practice", description: "Learn by solving a real problem", icon: Play, active: true }, { title: "Prove what you know", description: "Validate. Reflect. Progress.", icon: LockKeyhole, active: false }].map((step, index) => <div key={step.title} className="relative flex gap-3 pb-5 last:pb-0">{index < 2 && <span className="absolute bottom-0 left-[15px] top-8 w-px bg-border" />}<span className={cn("relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border", step.active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground")}><step.icon size={13} /></span><div className={cn("min-w-0 flex-1 rounded-lg p-3 pt-1", step.active && "border border-primary/25 bg-primary/5 pt-3")}><p className="text-xs font-medium sm:text-sm">{step.title}</p><p className="mt-1 text-[11px] text-muted-foreground">{step.description}</p>{step.active && <div className="mt-3 flex items-center gap-2 text-[10px] text-primary"><span className="h-1.5 w-1.5 rounded-full bg-primary" />YOUR NEXT MILESTONE<ArrowRight size={12} className="ml-auto" /></div>}</div></div>)}</div><div className="mt-6 flex items-center gap-2 border-t border-border pt-4 font-mono text-[10px] text-muted-foreground"><ShieldCheck size={13} className="text-codekita-secondary" />Structured learning. Validated progression.</div></div></div></div><div className="absolute -bottom-5 right-4 flex items-center gap-3 rounded-xl border border-border bg-codekita-surface-elevated px-4 py-3 shadow-ck-lg"><span className="rounded-lg bg-codekita-purple/10 p-2 text-codekita-purple"><Sparkles size={17} /></span><div><p className="text-xs font-medium">Built for the builder in you.</p><p className="mt-0.5 text-[10px] text-muted-foreground">One meaningful milestone at a time.</p></div></div></div>;
+  return (
+    <div className="relative mx-auto w-full max-w-xl lg:ml-0">
+      <div className="panel relative overflow-hidden shadow-ck-lg">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map(item => (
+              <span key={item} className="h-2 w-2 rounded-full bg-border" />
+            ))}
+          </div>
+          <span className="font-mono text-[10px] tracking-wider text-muted-foreground">
+            YOUR ENGINEERING WORKSPACE
+          </span>
+          <LockKeyhole size={12} className="text-muted-foreground" />
+        </div>
+        <div className="grid grid-cols-[48px_1fr] sm:grid-cols-[58px_1fr]">
+          <div className="flex flex-col items-center gap-5 border-r border-border bg-background/30 py-6">
+            {[Terminal, Layers3, GitBranch, Target].map((Icon, index) => (
+              <div
+                key={index}
+                className={cn(
+                  'rounded-lg p-2',
+                  index === 1 ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+                )}
+              >
+                <Icon size={16} />
+              </div>
+            ))}
+          </div>
+          <div className="min-w-0 p-5 sm:p-7">
+            <div className="mb-6 flex items-center justify-between">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Path overview
+              </p>
+              <span className="text-[10px] text-muted-foreground">Illustrative preview</span>
+            </div>
+            <div className="mb-5 flex items-center gap-3">
+              <span className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary">
+                <Code2 size={24} />
+              </span>
+              <div>
+                <p className="mb-1 text-[10px] text-primary">PROGRAMMING ACADEMY</p>
+                <h3 className="text-base sm:text-lg">From curiosity to capability.</h3>
+              </div>
+            </div>
+            <div>
+              {[
+                {
+                  title: 'Understand the foundations',
+                  description: 'Build your mental model',
+                  icon: Check,
+                  active: false,
+                },
+                {
+                  title: 'Put knowledge into practice',
+                  description: 'Learn by solving a real problem',
+                  icon: Play,
+                  active: true,
+                },
+                {
+                  title: 'Prove what you know',
+                  description: 'Validate. Reflect. Progress.',
+                  icon: LockKeyhole,
+                  active: false,
+                },
+              ].map((step, index) => (
+                <div key={step.title} className="relative flex gap-3 pb-5 last:pb-0">
+                  {index < 2 && (
+                    <span className="absolute bottom-0 left-[15px] top-8 w-px bg-border" />
+                  )}
+                  <span
+                    className={cn(
+                      'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border',
+                      step.active
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-card text-muted-foreground'
+                    )}
+                  >
+                    <step.icon size={13} />
+                  </span>
+                  <div
+                    className={cn(
+                      'min-w-0 flex-1 rounded-lg p-3 pt-1',
+                      step.active && 'border border-primary/25 bg-primary/5 pt-3'
+                    )}
+                  >
+                    <p className="text-xs font-medium sm:text-sm">{step.title}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{step.description}</p>
+                    {step.active && (
+                      <div className="mt-3 flex items-center gap-2 text-[10px] text-primary">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        YOUR NEXT MILESTONE
+                        <ArrowRight size={12} className="ml-auto" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex items-center gap-2 border-t border-border pt-4 font-mono text-[10px] text-muted-foreground">
+              <ShieldCheck size={13} className="text-codekita-secondary" />
+              Structured learning. Validated progression.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute -bottom-5 right-4 flex items-center gap-3 rounded-xl border border-border bg-codekita-surface-elevated px-4 py-3 shadow-ck-lg">
+        <span className="rounded-lg bg-codekita-purple/10 p-2 text-codekita-purple">
+          <Sparkles size={17} />
+        </span>
+        <div>
+          <p className="text-xs font-medium">Built for the builder in you.</p>
+          <p className="mt-0.5 text-[10px] text-muted-foreground">
+            One meaningful milestone at a time.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 export function HomePage() {
   const { user } = useAuth();
-  const paths = useQuery({ queryKey: ["paths"], queryFn: academyApi.paths });
-  return <>
-    <section className="relative overflow-hidden border-b border-border/60"><div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgb(var(--ck-primary)/0.05),transparent_55%)]" /><div className="page-container relative grid items-center gap-16 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-28"><div><p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Your next chapter starts here<ChevronRight size={12} /></p><h1 className="max-w-2xl text-[clamp(2.75rem,5vw,4.7rem)] font-semibold leading-[1.09] tracking-[-0.055em]">Build Skills.<br />Solve Challenges.<br /><span className="text-primary">Become an Engineer.</span></h1><p className="mt-7 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">Pelajari Programming, Cybersecurity, dan AI Engineering melalui pembelajaran terstruktur, praktik interaktif, dan tantangan berbasis kemampuan.</p><div className="mt-8 flex flex-wrap gap-3"><Button size="lg" asChild><Link to={user ? "/paths" : "/register"}>Mulai Belajar<ArrowRight size={16} className="ml-3" /></Link></Button><Button size="lg" variant="outline" asChild><Link to="/paths">Jelajahi Learning Paths</Link></Button></div><div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] text-muted-foreground">{["Learn at your pace", "Practice with purpose", "Progress that matters"].map((item) => <span className="flex items-center gap-1.5" key={item}><CheckCircle2 size={13} className="text-primary" />{item}</span>)}</div></div><HeroWorkspace /></div><div className="page-container grid gap-5 border-t border-border/60 py-6 text-xs text-muted-foreground sm:grid-cols-3">{[{ icon: Code2, text: "Build working software" }, { icon: ShieldCheck, text: "Understand and defend systems" }, { icon: Sparkles, text: "Engineer intelligent applications" }].map((item) => <div key={item.text} className="flex items-center justify-center gap-3"><item.icon size={16} className="text-foreground" />{item.text}</div>)}</div></section>
-    <section id="academies" className="page-container py-20 sm:py-24"><div className="mb-10 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Three disciplines. One destination.</p><h2 className="section-heading">Find your engineering edge.</h2></div><p className="muted max-w-sm">Choose your discipline. Build depth, connect ideas, and turn knowledge into capability.</p></div><div className="grid gap-5 md:grid-cols-3">{Object.entries(academies).map(([key, academy]) => <Link to={`/paths?academy=${key}`} key={key} className="panel group relative p-7 transition-colors hover:border-muted-foreground"><div className="mb-8 flex items-start justify-between"><span className={cn("rounded-xl p-3", academy.background, academy.color)}><academy.icon size={27} strokeWidth={1.5} /></span><ArrowUpRight size={17} className="text-muted-foreground transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" /></div><h3 className="text-xl">{academy.name}<br /><span className="text-muted-foreground">Academy</span></h3><p className="muted mt-4">{academy.description}</p><div className="mt-6 flex flex-wrap gap-2">{academy.tags.map((tag) => <span key={tag} className="rounded border border-border bg-background/40 px-2 py-1 text-[10px] text-muted-foreground">{tag}</span>)}</div></Link>)}</div></section>
-    <section className="border-y border-border bg-card/30 py-20"><div className="page-container"><div className="mb-9 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow mb-3">A clear way forward</p><h2 className="section-heading">Less guessing. More building.</h2></div><Link to="/paths" className="flex items-center gap-2 text-sm text-primary">Explore all paths<ArrowRight size={16} /></Link></div>{paths.isPending ? <CardSkeletons /> : paths.isError ? <DataState error title="Catalogue temporarily unavailable" description="Published paths will appear when the content service is available." retry={() => void paths.refetch()} /> : paths.data.length ? <div className="grid gap-5 md:grid-cols-3">{paths.data.slice(0, 3).map((path) => <PathCard key={path.id} path={path} />)}</div> : <DataState title="Your next path is on its way" description="The curriculum is being prepared. Explore the interactive preview below while the first paths are published." />}</div></section>
-    <section className="page-container py-20 sm:py-24"><div className="mb-12 text-center"><p className="eyebrow mb-3">The CodeKita approach</p><h2 className="section-heading">Don’t just watch. Work it out.</h2><p className="muted mt-4">A deliberate journey from understanding to independent problem-solving.</p></div><div className="mb-16 grid gap-8 md:grid-cols-3">{[{ icon: GitBranch, title: "Choose your direction", text: "Follow a structured path with clear prerequisites and skills to work toward." }, { icon: Terminal, title: "Learn by doing", text: "Read, experiment, and check your understanding through focused exercises." }, { icon: Target, title: "Earn your next milestone", text: "Pass assessments, validate your progress, and build a record of your skills." }].map((step, index) => <div key={step.title} className="relative border-t border-border pt-6"><span className="absolute -top-3 right-0 bg-background pl-3 font-mono text-xs text-muted-foreground">0{index + 1}</span><step.icon size={24} className="mb-5 text-primary" /><h3 className="mb-3 text-lg">{step.title}</h3><p className="muted max-w-sm">{step.text}</p></div>)}</div><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow mb-3">A small taste of the workspace</p><h2 className="section-heading">Curiosity, meet interaction.</h2></div><p className="muted max-w-xs">Read a snippet. Form a hypothesis.<br />See whether it holds up.</p></div><LearningPreview /></section>
-    <section className="page-container pb-20"><div className="grid gap-6 lg:grid-cols-2"><div className="panel p-7 sm:p-9"><span className="mb-5 inline-flex rounded-xl bg-codekita-secondary/10 p-3 text-codekita-secondary"><ShieldCheck size={24} /></span><p className="eyebrow mb-3">Practice with intention</p><h2 className="text-2xl">A safe space to work things out.</h2><p className="muted mt-4">Programming problems, defensive log reviews, and model evaluation exercises. Preview workspaces are clearly labeled; live execution requires an isolated runner.</p><div className="mt-6 space-y-3">{["Transform a dataset", "Investigate an access log", "Evaluate a classifier"].map((challenge, index) => <Link key={challenge} to={`/labs?academy=${["programming", "cybersecurity", "ai"][index]}`} className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary/40"><Code2 size={15} className="text-muted-foreground" />{challenge}<span className="ml-auto text-[10px] text-muted-foreground">PREVIEW</span><ArrowUpRight size={14} /></Link>)}</div></div><div className="panel flex flex-col p-7 sm:p-9"><span className="mb-5 inline-flex w-fit rounded-xl bg-codekita-purple/10 p-3 text-codekita-purple"><Users size={24} /></span><p className="eyebrow mb-3">Your effort has a story</p><h2 className="text-2xl">Make your progress visible.</h2><p className="muted mt-4">Build a learning streak, earn assessment-backed XP, unlock milestones, and join a privacy-conscious community leaderboard.</p><div className="my-7 grid grid-cols-3 gap-3">{[{ icon: Zap, text: "Validated XP" }, { icon: Target, text: "Milestones" }, { icon: ShieldCheck, text: "Certificates" }].map((item) => <div className="rounded-xl border border-border p-3 text-center" key={item.text}><item.icon className="mx-auto mb-3 text-codekita-purple" size={22} /><span className="text-[10px] text-muted-foreground">{item.text}</span></div>)}</div><Link to="/leaderboard" className="mt-auto flex items-center gap-2 text-sm text-primary">Meet the community<ArrowRight size={16} /></Link></div></div></section>
-    <section className="page-container pb-20"><div className="academy-grid panel relative overflow-hidden px-6 py-14 text-center sm:py-20"><span className="mb-5 inline-flex rounded-full border border-primary/30 bg-background p-3 text-primary"><Terminal size={25} /></span><p className="eyebrow mb-4">Built for what comes next</p><h2 className="text-3xl tracking-tight sm:text-5xl">Your next skill starts with<br /><span className="text-primary">one small step.</span></h2><p className="muted mx-auto mb-8 mt-5 max-w-md">No shortcuts. No empty promises. Just a better way to learn, practice, and become the engineer you want to be.</p><Button size="lg" asChild><Link to={user ? "/paths" : "/register"}>Start your journey<ArrowRight size={16} className="ml-3" /></Link></Button></div></section>
-  </>;
+  const paths = useQuery({ queryKey: ['paths'], queryFn: academyApi.paths });
+  return (
+    <>
+      <section className="relative overflow-hidden border-b border-border/60">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgb(var(--ck-primary)/0.05),transparent_55%)]" />
+        <div className="page-container relative grid items-center gap-16 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-28">
+          <div>
+            <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              Your next chapter starts here
+              <ChevronRight size={12} />
+            </p>
+            <h1 className="max-w-2xl text-[clamp(2.75rem,5vw,4.7rem)] font-semibold leading-[1.09] tracking-[-0.055em]">
+              Build Skills.
+              <br />
+              Solve Challenges.
+              <br />
+              <span className="text-primary">Become an Engineer.</span>
+            </h1>
+            <p className="mt-7 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+              Pelajari Programming, Cybersecurity, dan AI Engineering melalui pembelajaran
+              terstruktur, praktik interaktif, dan tantangan berbasis kemampuan.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button size="lg" asChild>
+                <Link to={user ? '/paths' : '/register'}>
+                  Mulai Belajar
+                  <ArrowRight size={16} className="ml-3" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/paths">Jelajahi Learning Paths</Link>
+              </Button>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] text-muted-foreground">
+              {['Learn at your pace', 'Practice with purpose', 'Progress that matters'].map(
+                item => (
+                  <span className="flex items-center gap-1.5" key={item}>
+                    <CheckCircle2 size={13} className="text-primary" />
+                    {item}
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+          <HeroWorkspace />
+        </div>
+        <div className="page-container grid gap-5 border-t border-border/60 py-6 text-xs text-muted-foreground sm:grid-cols-3">
+          {[
+            { icon: Code2, text: 'Build working software' },
+            { icon: ShieldCheck, text: 'Understand and defend systems' },
+            { icon: Sparkles, text: 'Engineer intelligent applications' },
+          ].map(item => (
+            <div key={item.text} className="flex items-center justify-center gap-3">
+              <item.icon size={16} className="text-foreground" />
+              {item.text}
+            </div>
+          ))}
+        </div>
+      </section>
+      <section id="academies" className="page-container py-20 sm:py-24">
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <p className="eyebrow mb-3">Three disciplines. One destination.</p>
+            <h2 className="section-heading">Find your engineering edge.</h2>
+          </div>
+          <p className="muted max-w-sm">
+            Choose your discipline. Build depth, connect ideas, and turn knowledge into capability.
+          </p>
+        </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          {Object.entries(academies).map(([key, academy]) => (
+            <Link
+              to={`/paths?academy=${key}`}
+              key={key}
+              className="panel group relative p-7 transition-colors hover:border-muted-foreground"
+            >
+              <div className="mb-8 flex items-start justify-between">
+                <span className={cn('rounded-xl p-3', academy.background, academy.color)}>
+                  <academy.icon size={27} strokeWidth={1.5} />
+                </span>
+                <ArrowUpRight
+                  size={17}
+                  className="text-muted-foreground transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
+                />
+              </div>
+              <h3 className="text-xl">
+                {academy.name}
+                <br />
+                <span className="text-muted-foreground">Academy</span>
+              </h3>
+              <p className="muted mt-4">{academy.description}</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {academy.tags.map(tag => (
+                  <span
+                    key={tag}
+                    className="rounded border border-border bg-background/40 px-2 py-1 text-[10px] text-muted-foreground"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="border-y border-border bg-card/30 py-20">
+        <div className="page-container">
+          <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow mb-3">A clear way forward</p>
+              <h2 className="section-heading">Less guessing. More building.</h2>
+            </div>
+            <Link to="/paths" className="flex items-center gap-2 text-sm text-primary">
+              Explore all paths
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          {paths.isPending ? (
+            <CardSkeletons />
+          ) : paths.isError ? (
+            <DataState
+              error
+              title="Catalogue temporarily unavailable"
+              description="Published paths will appear when the content service is available."
+              retry={() => void paths.refetch()}
+            />
+          ) : paths.data.length ? (
+            <div className="grid gap-5 md:grid-cols-3">
+              {paths.data.slice(0, 3).map(path => (
+                <PathCard key={path.id} path={path} />
+              ))}
+            </div>
+          ) : (
+            <DataState
+              title="Your next path is on its way"
+              description="The curriculum is being prepared. Explore the interactive preview below while the first paths are published."
+            />
+          )}
+        </div>
+      </section>
+      <section className="page-container py-20 sm:py-24">
+        <div className="mb-12 text-center">
+          <p className="eyebrow mb-3">The CodeKita approach</p>
+          <h2 className="section-heading">Don’t just watch. Work it out.</h2>
+          <p className="muted mt-4">
+            A deliberate journey from understanding to independent problem-solving.
+          </p>
+        </div>
+        <div className="mb-16 grid gap-8 md:grid-cols-3">
+          {[
+            {
+              icon: GitBranch,
+              title: 'Choose your direction',
+              text: 'Follow a structured path with clear prerequisites and skills to work toward.',
+            },
+            {
+              icon: Terminal,
+              title: 'Learn by doing',
+              text: 'Read, experiment, and check your understanding through focused exercises.',
+            },
+            {
+              icon: Target,
+              title: 'Earn your next milestone',
+              text: 'Pass assessments, validate your progress, and build a record of your skills.',
+            },
+          ].map((step, index) => (
+            <div key={step.title} className="relative border-t border-border pt-6">
+              <span className="absolute -top-3 right-0 bg-background pl-3 font-mono text-xs text-muted-foreground">
+                0{index + 1}
+              </span>
+              <step.icon size={24} className="mb-5 text-primary" />
+              <h3 className="mb-3 text-lg">{step.title}</h3>
+              <p className="muted max-w-sm">{step.text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow mb-3">A small taste of the workspace</p>
+            <h2 className="section-heading">Curiosity, meet interaction.</h2>
+          </div>
+          <p className="muted max-w-xs">
+            Read a snippet. Form a hypothesis.
+            <br />
+            See whether it holds up.
+          </p>
+        </div>
+        <LearningPreview />
+      </section>
+      <section className="page-container pb-20">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="panel p-7 sm:p-9">
+            <span className="mb-5 inline-flex rounded-xl bg-codekita-secondary/10 p-3 text-codekita-secondary">
+              <ShieldCheck size={24} />
+            </span>
+            <p className="eyebrow mb-3">Practice with intention</p>
+            <h2 className="text-2xl">A safe space to work things out.</h2>
+            <p className="muted mt-4">
+              Programming problems, defensive log reviews, and model evaluation exercises. Preview
+              workspaces are clearly labeled; live execution requires an isolated runner.
+            </p>
+            <div className="mt-6 space-y-3">
+              {['Transform a dataset', 'Investigate an access log', 'Evaluate a classifier'].map(
+                (challenge, index) => (
+                  <Link
+                    key={challenge}
+                    to={`/labs?academy=${['programming', 'cybersecurity', 'ai'][index]}`}
+                    className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary/40"
+                  >
+                    <Code2 size={15} className="text-muted-foreground" />
+                    {challenge}
+                    <span className="ml-auto text-[10px] text-muted-foreground">PREVIEW</span>
+                    <ArrowUpRight size={14} />
+                  </Link>
+                )
+              )}
+            </div>
+          </div>
+          <div className="panel flex flex-col p-7 sm:p-9">
+            <span className="mb-5 inline-flex w-fit rounded-xl bg-codekita-purple/10 p-3 text-codekita-purple">
+              <Users size={24} />
+            </span>
+            <p className="eyebrow mb-3">Your effort has a story</p>
+            <h2 className="text-2xl">Make your progress visible.</h2>
+            <p className="muted mt-4">
+              Build a learning streak, earn assessment-backed XP, unlock milestones, and join a
+              privacy-conscious community leaderboard.
+            </p>
+            <div className="my-7 grid grid-cols-3 gap-3">
+              {[
+                { icon: Zap, text: 'Validated XP' },
+                { icon: Target, text: 'Milestones' },
+                { icon: ShieldCheck, text: 'Certificates' },
+              ].map(item => (
+                <div className="rounded-xl border border-border p-3 text-center" key={item.text}>
+                  <item.icon className="mx-auto mb-3 text-codekita-purple" size={22} />
+                  <span className="text-[10px] text-muted-foreground">{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <Link
+              to="/leaderboard"
+              className="mt-auto flex items-center gap-2 text-sm text-primary"
+            >
+              Meet the community
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+      <section className="page-container pb-20">
+        <div className="academy-grid panel relative overflow-hidden px-6 py-14 text-center sm:py-20">
+          <span className="mb-5 inline-flex rounded-full border border-primary/30 bg-background p-3 text-primary">
+            <Terminal size={25} />
+          </span>
+          <p className="eyebrow mb-4">Built for what comes next</p>
+          <h2 className="text-3xl tracking-tight sm:text-5xl">
+            Your next skill starts with
+            <br />
+            <span className="text-primary">one small step.</span>
+          </h2>
+          <p className="muted mx-auto mb-8 mt-5 max-w-md">
+            No shortcuts. No empty promises. Just a better way to learn, practice, and become the
+            engineer you want to be.
+          </p>
+          <Button size="lg" asChild>
+            <Link to={user ? '/paths' : '/register'}>
+              Start your journey
+              <ArrowRight size={16} className="ml-3" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+    </>
+  );
 }

@@ -7,7 +7,7 @@ import type { SessionPayload } from "@codekita/shared";
 
 export const CurrentUser = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): SessionPayload => {
-    const request = ctx.switchToHttp().getRequest<any>();
+    const request = ctx.switchToHttp().getRequest<{ user: SessionPayload }>();
     return request.user as SessionPayload;
   },
 );

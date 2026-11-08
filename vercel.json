@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci --ignore-scripts",
+  "buildCommand": "npm run build:static",
+  "outputDirectory": "dist/frontend-static",
+  "rewrites": [
+    { "source": "/((?!api(?:/|$)|assets(?:/|$)|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}

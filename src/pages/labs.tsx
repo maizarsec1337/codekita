@@ -1,21 +1,185 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { labDefinitions } from "@codekita/shared";
-import { ArrowDownToLine, CheckCircle2, Clock3, Lightbulb, LockKeyhole, Play, RotateCcw, Send, ShieldCheck, Terminal } from "lucide-react";
-import { academies, PageHeading } from "@/components/academy/shared";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { labDefinitions } from '@codekita/shared';
+import {
+  ArrowDownToLine,
+  CheckCircle2,
+  Clock3,
+  Lightbulb,
+  LockKeyhole,
+  Play,
+  RotateCcw,
+  Send,
+  ShieldCheck,
+  Terminal,
+} from 'lucide-react';
+import { academies, PageHeading } from '@/components/academy/shared';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 export function LabsPage() {
   const [params, setParams] = useSearchParams();
-  const category = params.get("academy") ?? "programming";
-  const lab = labDefinitions.find((item) => item.academy === category) ?? labDefinitions[0];
-  return <div className="page-container py-12"><PageHeading eyebrow="Learn by working things out" title="Practice labs" description="A focused space for coding, defensive analysis, and AI evaluation. Think deeply. Work deliberately." /><div className="mb-7 flex flex-wrap gap-3" role="group" aria-label="Lab category">{Object.entries(academies).map(([key, academy]) => <button key={key} onClick={() => setParams({ academy: key })} aria-pressed={lab.academy === key} className={cn("flex items-center gap-2 rounded-lg border px-4 py-3 text-xs", lab.academy === key ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground")}><academy.icon size={15} />{academy.name}</button>)}</div><LabWorkspace key={lab.id} lab={lab} /></div>;
+  const category = params.get('academy') ?? 'programming';
+  const lab = labDefinitions.find(item => item.academy === category) ?? labDefinitions[0];
+  return (
+    <div className="page-container py-12">
+      <PageHeading
+        eyebrow="Learn by working things out"
+        title="Practice labs"
+        description="A focused space for coding, defensive analysis, and AI evaluation. Think deeply. Work deliberately."
+      />
+      <div className="mb-7 flex flex-wrap gap-3" role="group" aria-label="Lab category">
+        {Object.entries(academies).map(([key, academy]) => (
+          <button
+            key={key}
+            onClick={() => setParams({ academy: key })}
+            aria-pressed={lab.academy === key}
+            className={cn(
+              'flex items-center gap-2 rounded-lg border px-4 py-3 text-xs',
+              lab.academy === key
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-border bg-card text-muted-foreground'
+            )}
+          >
+            <academy.icon size={15} />
+            {academy.name}
+          </button>
+        ))}
+      </div>
+      <LabWorkspace key={lab.id} lab={lab} />
+    </div>
+  );
 }
-function LabWorkspace({ lab }: { lab: typeof labDefinitions[number] }) {
-  const [code, setCode] = useState(lab.starter), [language, setLanguage] = useState(lab.language), [message, setMessage] = useState("");
+function LabWorkspace({ lab }: { lab: (typeof labDefinitions)[number] }) {
+  const [code, setCode] = useState(lab.starter),
+    [language, setLanguage] = useState(lab.language),
+    [message, setMessage] = useState('');
   const download = () => {
-    const url = URL.createObjectURL(new Blob([code], { type: "text/plain" }));
-    const link = document.createElement("a"); link.href = url; link.download = `${lab.id}.${language === "javascript" ? "js" : language === "python" ? "py" : "txt"}`; link.click(); URL.revokeObjectURL(url); setMessage("Draft downloaded. No code was executed.");
+    const url = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${lab.id}.${language === 'javascript' ? 'js' : language === 'python' ? 'py' : 'txt'}`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setMessage('Draft downloaded. No code was executed.');
   };
-  return <><div className="mb-6 flex items-start gap-3 rounded-xl border border-codekita-warning/30 bg-codekita-warning/5 p-4"><LockKeyhole size={18} className="mt-0.5 shrink-0 text-codekita-warning" /><div><h2 className="text-sm text-codekita-warning">Preview workspace · execution unavailable</h2><p className="mt-1 text-xs leading-6 text-muted-foreground">No isolated runner is configured. You can edit and download your draft, but Run and Submit are disabled. There is no connected terminal, live environment, grading, or XP award.</p></div></div><div className="grid items-start gap-5 lg:grid-cols-[350px_minmax(0,1fr)]"><aside className="panel p-6"><div className="mb-5 flex items-center gap-2 text-[10px] text-muted-foreground"><span className="rounded border border-border px-2 py-1">BEGINNER</span><Clock3 size={12} />{lab.duration}</div><h2 className="text-xl">{lab.title}</h2><p className="muted mt-4">{lab.description}</p><h3 className="mb-4 mt-7 text-sm">Objectives</h3><ul className="space-y-3">{lab.objectives.map((objective) => <li key={objective} className="flex items-start gap-2 text-xs leading-6 text-muted-foreground"><CheckCircle2 size={13} className="mt-1.5 shrink-0 text-codekita-secondary" />{objective}</li>)}</ul><h3 className="mb-3 mt-7 text-sm">{lab.academy === "cybersecurity" ? "Scope" : "Sample input / expected result"}</h3><pre className="whitespace-pre-wrap rounded-lg border border-border bg-background p-4 font-mono text-xs leading-6 text-codekita-secondary">{lab.sample}</pre><details className="mt-5 rounded-lg border border-border p-3"><summary className="cursor-pointer text-xs"><Lightbulb size={13} className="mr-2 inline text-codekita-warning" />Need a hint?</summary><p className="mt-3 text-xs leading-6 text-muted-foreground">{lab.hint}</p></details><p className="mt-6 flex items-start gap-2 text-[10px] leading-5 text-muted-foreground"><ShieldCheck size={14} className="mt-0.5 shrink-0" />Training artifacts only. Never target unauthorized third-party systems.</p></aside><div className="panel min-w-0 overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/40 px-4 py-3"><span className="flex items-center gap-2 font-mono text-xs text-muted-foreground"><Terminal size={15} />{lab.academy === "cybersecurity" ? "investigation-notes" : "solution"}</span><select aria-label="Editor language" className="field w-auto py-1.5 text-xs" value={language} onChange={(event) => setLanguage(event.target.value)}><option value={lab.language}>{lab.language}</option>{lab.language !== "text" && <option value="text">plain text</option>}</select></div><label className="sr-only" htmlFor="lab-code">{lab.academy === "cybersecurity" ? "Investigation notes" : "Solution code"}</label><textarea id="lab-code" value={code} onChange={(event) => setCode(event.target.value)} spellCheck={false} autoCapitalize="off" autoComplete="off" className="block min-h-[360px] w-full resize-y bg-background/60 p-5 font-mono text-xs leading-7 text-foreground outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30 sm:min-h-[400px]" /><div className="flex flex-wrap items-center gap-2 border-y border-border p-3"><Button size="sm" disabled title="An isolated runner is not configured"><Play size={13} className="mr-2" />Run code</Button><Button size="sm" variant="outline" disabled title="Grading is not available"><Send size={13} className="mr-2" />Submit solution</Button><Button size="sm" variant="ghost" onClick={download}><ArrowDownToLine size={14} className="mr-2" />Download draft</Button><Button size="icon" variant="ghost" aria-label="Reset draft to starter" onClick={() => { setCode(lab.starter); setMessage("Draft reset to starter content."); }}><RotateCcw size={15} /></Button></div><div className="min-h-32 bg-background/30 p-5"><h3 className="mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{lab.academy === "ai" ? "Experiment output" : "Results"}</h3><p className="text-xs leading-6 text-muted-foreground" role="status">{message || "No execution has taken place. Test results will appear only when an isolated execution and assessment service is integrated."}</p></div></div></div></>;
+  return (
+    <>
+      <div className="mb-6 flex items-start gap-3 rounded-xl border border-codekita-warning/30 bg-codekita-warning/5 p-4">
+        <LockKeyhole size={18} className="mt-0.5 shrink-0 text-codekita-warning" />
+        <div>
+          <h2 className="text-sm text-codekita-warning">
+            Preview workspace · execution unavailable
+          </h2>
+          <p className="mt-1 text-xs leading-6 text-muted-foreground">
+            No isolated runner is configured. You can edit and download your draft, but Run and
+            Submit are disabled. There is no connected terminal, live environment, grading, or XP
+            award.
+          </p>
+        </div>
+      </div>
+      <div className="grid items-start gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
+        <aside className="panel p-6">
+          <div className="mb-5 flex items-center gap-2 text-[10px] text-muted-foreground">
+            <span className="rounded border border-border px-2 py-1">BEGINNER</span>
+            <Clock3 size={12} />
+            {lab.duration}
+          </div>
+          <h2 className="text-xl">{lab.title}</h2>
+          <p className="muted mt-4">{lab.description}</p>
+          <h3 className="mb-4 mt-7 text-sm">Objectives</h3>
+          <ul className="space-y-3">
+            {lab.objectives.map(objective => (
+              <li
+                key={objective}
+                className="flex items-start gap-2 text-xs leading-6 text-muted-foreground"
+              >
+                <CheckCircle2 size={13} className="mt-1.5 shrink-0 text-codekita-secondary" />
+                {objective}
+              </li>
+            ))}
+          </ul>
+          <h3 className="mb-3 mt-7 text-sm">
+            {lab.academy === 'cybersecurity' ? 'Scope' : 'Sample input / expected result'}
+          </h3>
+          <pre className="whitespace-pre-wrap rounded-lg border border-border bg-background p-4 font-mono text-xs leading-6 text-codekita-secondary">
+            {lab.sample}
+          </pre>
+          <details className="mt-5 rounded-lg border border-border p-3">
+            <summary className="cursor-pointer text-xs">
+              <Lightbulb size={13} className="mr-2 inline text-codekita-warning" />
+              Need a hint?
+            </summary>
+            <p className="mt-3 text-xs leading-6 text-muted-foreground">{lab.hint}</p>
+          </details>
+          <p className="mt-6 flex items-start gap-2 text-[10px] leading-5 text-muted-foreground">
+            <ShieldCheck size={14} className="mt-0.5 shrink-0" />
+            Training artifacts only. Never target unauthorized third-party systems.
+          </p>
+        </aside>
+        <div className="panel min-w-0 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/40 px-4 py-3">
+            <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+              <Terminal size={15} />
+              {lab.academy === 'cybersecurity' ? 'investigation-notes' : 'solution'}
+            </span>
+            <select
+              aria-label="Editor language"
+              className="field w-auto py-1.5 text-xs"
+              value={language}
+              onChange={event => setLanguage(event.target.value)}
+            >
+              <option value={lab.language}>{lab.language}</option>
+              {lab.language !== 'text' && <option value="text">plain text</option>}
+            </select>
+          </div>
+          <label className="sr-only" htmlFor="lab-code">
+            {lab.academy === 'cybersecurity' ? 'Investigation notes' : 'Solution code'}
+          </label>
+          <textarea
+            id="lab-code"
+            value={code}
+            onChange={event => setCode(event.target.value)}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoComplete="off"
+            className="block min-h-[360px] w-full resize-y bg-background/60 p-5 font-mono text-xs leading-7 text-foreground outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30 sm:min-h-[400px]"
+          />
+          <div className="flex flex-wrap items-center gap-2 border-y border-border p-3">
+            <Button size="sm" disabled title="An isolated runner is not configured">
+              <Play size={13} className="mr-2" />
+              Run code
+            </Button>
+            <Button size="sm" variant="outline" disabled title="Grading is not available">
+              <Send size={13} className="mr-2" />
+              Submit solution
+            </Button>
+            <Button size="sm" variant="ghost" onClick={download}>
+              <ArrowDownToLine size={14} className="mr-2" />
+              Download draft
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label="Reset draft to starter"
+              onClick={() => {
+                setCode(lab.starter);
+                setMessage('Draft reset to starter content.');
+              }}
+            >
+              <RotateCcw size={15} />
+            </Button>
+          </div>
+          <div className="min-h-32 bg-background/30 p-5">
+            <h3 className="mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lab.academy === 'ai' ? 'Experiment output' : 'Results'}
+            </h3>
+            <p className="text-xs leading-6 text-muted-foreground" role="status">
+              {message ||
+                'No execution has taken place. Test results will appear only when an isolated execution and assessment service is integrated.'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

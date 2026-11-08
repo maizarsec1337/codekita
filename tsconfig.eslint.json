@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["vite/client", "node"]
+  },
+  "include": ["src/**/*", "packages/shared/src/**/*", "scripts/**/*.ts", "tests/**/*.ts", "prisma/**/*.ts", "*.ts", "*.mts"],
+  "exclude": ["node_modules", "dist", "coverage"]
+}

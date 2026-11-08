@@ -23,7 +23,7 @@ export class CoursesController {
     try {
       const result = await this.coursesService.findAll(parsed.page, parsed.limit);
       return parseCoursesResponse(result);
-    } catch (error) {
+    } catch {
       throw new ServiceUnavailableException("Courses service unavailable");
     }
   }

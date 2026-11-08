@@ -16,7 +16,7 @@ export function Providers({ children }: { children: ReactNode }) {
     if (isStaticFrontend) { setUser(null); setLoading(false); return; }
     let cancelled = false;
     setLoading(true);
-    (async () => {
+    void (async () => {
       try {
         const { user } = (await api.auth.me()) as { user: SessionPayload };
         if (!cancelled) setUser(user as SessionPayload);

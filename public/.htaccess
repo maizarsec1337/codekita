@@ -1,0 +1,30 @@
+# CodeKita static frontend — install in this domain's htdocs directory.
+# Merge with existing site rules; never overwrite hosting-level configuration.
+# Local documents preserve the original status (unlike external redirects).
+
+
+
+
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Leave real files/directories and error documents to the web server.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Never turn missing assets, API endpoints or server documents into HTML 200s.
+  RewriteRule ^(?:api|assets|status)(?:/|$) - [L,NC]
+  RewriteRule \.[^/]+$ - [L]
+
+  # Only browser page navigations use SPA history fallback. Do not swallow POSTs.
+  RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+  RewriteCond %{HTTP_ACCEPT} text/html [NC]
+  RewriteCond %{DOCUMENT_ROOT}/index.html -f
+  RewriteRule ^ /index.html [L]
+</IfModule>
+ErrorDocument 403 /status/403.html
+ErrorDocument 404 /status/404.html
+ErrorDocument 500 /status/500.html
+ErrorDocument 503 /status/503.html

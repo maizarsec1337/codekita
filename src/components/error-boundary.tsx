@@ -21,7 +21,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("Error boundary caught:", error, errorInfo);
+    // Never print server payloads or component details in the production browser.
+    if (import.meta.env.DEV) console.error("Error boundary caught:", error, errorInfo);
   }
 
   render(): ReactNode {

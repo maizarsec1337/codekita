@@ -1,7 +1,5 @@
-import { ArgumentException } from "@nestjs/common";
-
-export function IsPublic(): any {
-  return function (target: any, key: string, descriptor: PropertyDescriptor) {
+export function IsPublic(): MethodDecorator {
+  return function (_target: object, _key: string | symbol, descriptor: PropertyDescriptor) {
     // Mark the method as public (no auth guard)
     return descriptor;
   };

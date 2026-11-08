@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<any>();
+    const request = context.switchToHttp().getRequest<{ headers: { cookie?: string }; user?: SessionPayload }>();
     const sessionName = this.configService.get<string>("SESSION_NAME", "codekita_session");
 
     const token = cookies(request.headers.cookie)[sessionName];

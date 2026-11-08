@@ -13,11 +13,14 @@ export function CoursesPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   const limit = 6;
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(null);
     api
       .courses({ page, limit })
       .then((response) => {
@@ -30,6 +33,7 @@ export function CoursesPage() {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load courses");
           setCourses([]);
+          setMeta(null);
         }
       })
       .finally(() => {
@@ -38,11 +42,11 @@ export function CoursesPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, limit]);
+  }, [page, limit, attempt]);
 
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 py-8 flex gap-4">
+      <div role="status" aria-label="Loading courses" className="px-4 sm:px-6 lg:px-8 py-8 flex gap-4">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-48 w-full" />
         ))}
@@ -62,16 +66,10 @@ export function CoursesPage() {
       </div>
 
       {error && (
-        <div className="rounded-xl border p-6 text-center">
+        <div role="alert" className="rounded-xl border p-6 text-center">
           <p className="text-sm">{error}</p>
           <button
-            onClick={() => {
-              setError(null);
-              api.courses({ page, limit }).then((r) => {
-                setCourses(r.data);
-                setMeta(r.meta);
-              });
-            }}
+            onClick={() => setAttempt((previous) => previous + 1)}
             className="mt-2 text-sm font-medium text-blue-600 hover:underline"
           >
             Try again

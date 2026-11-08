@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +31,7 @@ const schema = z.object({
 type LoginForm = z.infer<typeof schema>;
 
 export function LoginPage() {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -53,11 +55,11 @@ export function LoginPage() {
     } else {
       const err = result.error as ApiError;
       setServerError(
-        (err.body as { message?: string })?.message ?? err.message ?? "Login failed. Please try again.",
+        (err.body as { message?: string })?.message ?? err.message ?? t("Login failed. Please try again."),
       );
       toast({
-        title: "Login failed",
-        description: (err.body as { message?: string })?.message ?? err.message ?? "Please try again.",
+        title: t("Login failed"),
+        description: (err.body as { message?: string })?.message ?? err.message ?? t("Please try again."),
       });
     }
   };
@@ -66,35 +68,35 @@ export function LoginPage() {
     <div className="flex min-h-[calc(100vh-160px)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Sign in</CardTitle>
+          <CardTitle className="text-2xl">{t("Sign in")}</CardTitle>
           <CardDescription>
-            {isStaticFrontend ? "Demo only — use fictional inputs. No authentication or account is created." : "Enter your CodeKita account credentials"}
+            {isStaticFrontend ? t("Demo only — use fictional inputs. No authentication or account is created.") : t("Enter your CodeKita account credentials")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {serverError && (
             <div role="status" className="mb-4 p-3 rounded-md bg-red-50 text-sm text-red-700 border border-red-100">
-              {serverError}
+              {isStaticFrontend ? t(serverError) : serverError}
             </div>
           )}
-          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/dashboard">Explore demo dashboard</Link></Button>}
+          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/dashboard">{t("Explore demo dashboard")}</Link></Button>}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <fieldset className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="identifier">Identifier</Label>
+              <Label htmlFor="identifier">{t("Identifier")}</Label>
               <Input
                 id="identifier"
-                placeholder="name@example.com or username"
+                placeholder={t("name@example.com or username")}
                 autoComplete={isStaticFrontend ? "off" : "username"}
                 {...register("identifier")}
                 disabled={isLoading}
               />
               {errors.identifier && (
-                <p className="text-xs text-red-600">{errors.identifier.message}</p>
+                <p className="text-xs text-red-600">{t(errors.identifier.message ?? "")}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("Password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -103,11 +105,11 @@ export function LoginPage() {
                 disabled={isLoading}
               />
               {errors.password && (
-                <p className="text-xs text-red-600">{errors.password.message}</p>
+                <p className="text-xs text-red-600">{t(errors.password.message ?? "")}</p>
               )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isStaticFrontend ? "Validate demo form" : "Sign in"}
+              {isStaticFrontend ? t("Validate demo form") : t("Sign in")}
             </Button>
             </fieldset>
           </form>
@@ -115,9 +117,9 @@ export function LoginPage() {
         <CardFooter className="flex flex-col space-y-4">
           <Separator />
           <p className="text-sm text-center text-muted-foreground">
-            Don't have an account?{" "}
+            {t("Don't have an account?")}{" "}
             <Link to="/register" className="font-medium text-blue-600 hover:underline">
-              Create one
+              {t("Create one")}
             </Link>
           </p>
         </CardFooter>

@@ -13,8 +13,8 @@ const EXEMPT_PATHS = ["/api/auth/login", "/api/auth/register", "/api/auth/csrf-t
 @Injectable()
 export class CsrfMiddleware implements NestMiddleware {
   use(
-    request: any,
-    _reply: any,
+    request: { url: string; method: string; cookies?: Record<string, string>; headers: Record<string, string | string[] | undefined> },
+    _reply: unknown,
     next: (error?: unknown) => void,
   ): void {
     const isExempt = EXEMPT_PATHS.includes(request.url);

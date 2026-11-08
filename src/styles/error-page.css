@@ -1,0 +1,91 @@
+/* Shared by the React error screen and generated standalone server documents.
+   All colors come from the existing CodeKita --ck-* design tokens. */
+.ck-error {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: rgb(var(--ck-bg));
+  color: rgb(var(--ck-text-primary));
+  font-family: Inter, system-ui, sans-serif;
+}
+.ck-error *, .ck-error *::before, .ck-error *::after { box-sizing: border-box; }
+.ck-error-header, .ck-error-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: min(100%, 1280px);
+  margin-inline: auto;
+  padding: 22px 32px;
+}
+.ck-error-header { border-bottom: 1px solid rgb(var(--ck-border) / .7); }
+.ck-error-main {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 64px 32px;
+}
+.ck-error-main::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: radial-gradient(ellipse at 75% 45%, rgb(var(--ck-primary) / .04), transparent 65%);
+}
+.ck-error-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 88px);
+  align-items: center;
+  width: min(100%, 1120px);
+  margin-inline: auto;
+  animation: ck-error-enter .5s ease-out both;
+}
+.ck-error-copy { min-width: 0; }
+.ck-error-kicker, .ck-error-panel-bar, .ck-error-code, .ck-error-panel-foot {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+.ck-error-kicker { margin: 0 0 20px; color: rgb(var(--ck-primary)); font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; }
+.ck-error h1 { margin: 0; font-size: clamp(30px, 3.5vw, 46px); font-weight: 600; line-height: 1.16; letter-spacing: -.04em; text-wrap: balance; color: rgb(var(--ck-text-primary)); }
+.ck-error-description { max-width: 480px; margin: 22px 0 0; font-size: 15px; line-height: 1.85; color: rgb(var(--ck-text-secondary)); }
+.ck-error-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.ck-error .ck-error-action { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; height: auto; padding: 12px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; line-height: 1.5; text-decoration: none; transition: background-color .2s, border-color .2s; }
+.ck-error-hint { display: flex; align-items: flex-start; gap: 10px; max-width: 480px; margin: 28px 0 0; padding-top: 22px; border-top: 1px solid rgb(var(--ck-border)); color: rgb(var(--ck-text-secondary)); font-size: 12px; line-height: 1.8; }
+.ck-error-hint svg { flex: none; margin-top: 3px; }
+.ck-error-retry-message { margin: 12px 0 0; color: rgb(var(--ck-text-secondary)); font-size: 13px; }
+.ck-error-panel { min-width: 0; overflow: hidden; border: 1px solid rgb(var(--ck-border)); border-radius: 16px; background: rgb(var(--ck-surface)); box-shadow: 0 20px 70px rgb(0 0 0 / .3); }
+.ck-error-panel-bar, .ck-error-panel-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; font-size: 10px; color: rgb(var(--ck-text-secondary)); }
+.ck-error-panel-bar { border-bottom: 1px solid rgb(var(--ck-border)); }
+.ck-error-panel-dots { display: flex; gap: 6px; }
+.ck-error-panel-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgb(var(--ck-border)); }
+.ck-error-art { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; min-height: 330px; padding: 36px 20px; background-image: linear-gradient(rgb(var(--ck-border) / .25) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--ck-border) / .25) 1px, transparent 1px); background-size: 40px 40px; }
+.ck-error-art::before { content: ""; position: absolute; width: 220px; height: 220px; border: 1px solid rgb(var(--ck-primary) / .1); border-radius: 50%; pointer-events: none; }
+.ck-error-symbol { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 16px; border: 1px solid rgb(var(--ck-primary) / .25); background: rgb(var(--ck-surface)); color: rgb(var(--ck-primary)); }
+.ck-error-code { position: relative; margin: 0; color: rgb(var(--ck-text-primary)); font-size: clamp(88px, 10vw, 144px); font-weight: 600; letter-spacing: -.08em; line-height: 1; }
+.ck-error-panel-foot { justify-content: center; border-top: 1px solid rgb(var(--ck-border)); text-align: center; letter-spacing: .04em; }
+.ck-error-panel-foot svg { flex: none; color: rgb(var(--ck-primary)); }
+.ck-error-footer { border-top: 1px solid rgb(var(--ck-border) / .7); color: rgb(var(--ck-text-secondary)); font-size: 11px; line-height: 1.7; }
+.ck-error-footer p { margin: 0; }
+.ck-error :focus-visible { outline: 2px solid rgb(var(--ck-primary)); outline-offset: 4px; }
+.ck-error h1:focus { outline: none; }
+@keyframes ck-error-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 767px) {
+  .ck-error-header, .ck-error-footer { padding: 20px; }
+  .ck-error-main { padding: 36px 20px; }
+  .ck-error-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; max-width: 520px; }
+  .ck-error-panel { grid-row: 1; }
+  .ck-error-art { min-height: 210px; padding: 22px 20px; gap: 14px; }
+  .ck-error-art::before { width: 170px; height: 170px; }
+  .ck-error-symbol { width: 48px; height: 48px; border-radius: 12px; }
+  .ck-error-symbol svg { width: 26px; height: 26px; }
+  .ck-error-kicker { margin-bottom: 14px; }
+}
+@media (max-width: 380px) { .ck-error-actions > * { width: 100%; } .ck-error-header { gap: 12px; } }
+@media (prefers-reduced-motion: reduce) { .ck-error-layout { animation: none; } .ck-error .ck-error-action { transition: none; } }
+html[data-reduced-motion="true"] .ck-error-layout { animation: none; }
+html[data-reduced-motion="true"] .ck-error .ck-error-action { transition: none; }

@@ -15,6 +15,11 @@ import { join } from "node:path";
 import type { Env } from "@codekita/shared";
 import { cookies, validCsrf } from "./common/security";
 
+// Use the plugin's Fastify types consistently: pnpm can install a different
+// Fastify minor alongside Nest's adapter than the direct application dependency.
+type PluginFastifyInstance = Parameters<typeof fastifyStatic>[0];
+type FrontendHandler = Parameters<PluginFastifyInstance["setNotFoundHandler"]>[1];
+
 async function bootstrap() {
   const logger = new PinoLogger();
 
@@ -29,7 +34,9 @@ async function bootstrap() {
   const corsOrigin = configService.get<string>("CORS_ORIGIN", "http://localhost:5173");
   const nodeEnv = configService.get<Env["NODE_ENV"]>("NODE_ENV", "development");
 
-  const fastify = app.getHttpAdapter().getInstance();
+  // Nest's adapter and the plugins resolve different Fastify 5 type copies.
+  // Normalize that type-only boundary; the runtime instance is unchanged.
+  const fastify = app.getHttpAdapter().getInstance() as unknown as PluginFastifyInstance;
   fastify.addHook("onRequest", async (request, reply) => {
     if (request.url.startsWith("/api/")) reply.header("Cache-Control", "no-store");
     if (!["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) return;
@@ -41,14 +48,14 @@ async function bootstrap() {
   });
 
   // Security headers (Fastify Helmet)
-  await fastify.register(fastifyHelmet as any, {
+  await fastify.register(fastifyHelmet, {
     contentSecurityPolicy: false,
     hidePoweredBy: true,
     hsts: nodeEnv === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
   });
 
   // Limit API requests without counting static assets and client-side routes.
-  await fastify.register(fastifyRateLimit as any, {
+  await fastify.register(fastifyRateLimit, {
     max: nodeEnv === "production" ? 100 : 1000,
     timeWindow: 60000,
     allowList: (request: { url: string }) => !request.url.split("?")[0].startsWith("/api/"),
@@ -88,9 +95,9 @@ async function bootstrap() {
   if (nodeEnv === "production") {
     const publicDir = join(process.cwd(), "dist");
     if (existsSync(publicDir)) {
-      await fastify.register(fastifyStatic as any, { root: publicDir, serve: false });
+      await fastify.register(fastifyStatic, { root: publicDir, serve: false });
 
-      const frontendFallback = (request: any, reply: any) => {
+      const frontendFallback: FrontendHandler = (request, reply) => {
         const pathname = request.url.split("?")[0];
         if (request.method === "GET" && (pathname.startsWith("/assets/") || pathname === "/favicon.svg")) {
           return reply.sendFile(pathname.slice(1), publicDir);
