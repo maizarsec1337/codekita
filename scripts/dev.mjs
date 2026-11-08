@@ -1,9 +1,16 @@
 import { spawn } from "node:child_process";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ensureLocalSessionSecret } from "./ensure-environment.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const options = { cwd: root, stdio: "inherit", env: { ...process.env, NODE_ENV: "development" } };
+const environment = { ...process.env, NODE_ENV: "development" };
+const result = await ensureLocalSessionSecret({ root, environment });
+if (result.generated) {
+  console.log(`[dev] Generated missing SESSION_SECRET in ${basename(result.filePath)} (value hidden).`);
+}
+
+const options = { cwd: root, stdio: "inherit", env: environment };
 const build = spawn(process.execPath, [join(root, "scripts", "unified-build.mjs")], options);
 const buildCode = await new Promise((resolve, reject) => {
   build.once("error", reject);
