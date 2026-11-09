@@ -7,7 +7,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["**/node_modules/**", ".pnpm-store/**", "**/dist/**", "**/*.env", "coverage/**"],
+    ignores: ["**/node_modules/**", ".pnpm-store/**", "**/dist/**", ".server-build/**", "build/**", "deploy/**", "**/*.env"],
   },
   {
     files: ["**/*.{js,mjs,cjs}"],

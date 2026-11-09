@@ -17,21 +17,20 @@ The SPA rewrite sends extensionless non-API page paths to `/index.html`; it
 excludes `/api`, `/assets`, and paths containing a file extension so assets,
 missing files, and the rewrite destination are not rewritten. This is a static
 demo; it does not deploy or enable an API or provide actual authentication.
+The rewrite is configured in `vercel.json`; this repository no longer includes
+an automated test suite for that configuration.
 
 Local validation:
 
 ```powershell
 npm run build:static
 npm run typecheck:frontend
-pnpm exec vitest run scripts/vercel-config.test.ts
-node scripts/static-browser-smoke.mjs --preview
 ```
 
-The browser smoke test runs a local Vite preview on port 4173 and requires
-Chrome. It tests the built frontend and Vite's SPA fallback, **not Vercel's CDN**.
-The rewrite source is covered by a local regex test; final routing behavior must
-still be checked on Vercel. No actual deployment or production configuration
-update was performed.
+These commands validate the local static build and frontend types. The Vercel
+rewrite configuration is maintained in `vercel.json`; final routing behavior
+must still be checked on Vercel. No actual deployment or production
+configuration update was performed.
 
 Before the next authorized deployment, ensure Vercel's root directory points
 to this project and that any dashboard-level overrides do not replace the

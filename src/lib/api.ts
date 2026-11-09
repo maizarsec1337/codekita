@@ -4,10 +4,21 @@ import {
   apiErrorSchema,
   type CoursesResponse,
 } from "@codekita/shared";
-import { isStaticFrontend } from "./mode";
-import { demoCourses } from "@/data/static-demo";
+import { isStaticFrontend, apiBase } from "./mode";
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/+$/, "");
+const API_BASE = apiBase.replace(/\/+$/, "");
+
+function validateApiBase() {
+  if (API_BASE === "/api" || API_BASE.startsWith("/api/")) return;
+  if (API_BASE.startsWith("/")) throw new ApiError(0, null, "VITE_API_URL must be an HTTPS URL or a same-origin /api path.");
+  let url: URL;
+  try { url = new URL(API_BASE); }
+  catch { throw new ApiError(0, null, "VITE_API_URL must be a valid absolute HTTPS URL or a same-origin /api path."); }
+  if (url.protocol !== "https:" && (typeof window === "undefined" || window.location.protocol !== "http:" || !["localhost", "127.0.0.1"].includes(url.hostname))) {
+    throw new ApiError(0, null, "The production API must use HTTPS.");
+  }
+  if (url.username || url.password) throw new ApiError(0, null, "API URLs must not contain credentials.");
+}
 
 export class ApiError extends Error {
   constructor(
@@ -24,22 +35,31 @@ export async function request<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  if (isStaticFrontend) throw new ApiError(503, null, "Static demo mode: backend requests are unavailable.");
+  if (isStaticFrontend) throw new ApiError(503, null, "The CodeKita backend is not configured. Account services are unavailable.");
+  validateApiBase();
   const url = `${API_BASE}${path.startsWith("/") ? path : "/" + path}`;
   const headers = new Headers(init.headers);
-  headers.set("Content-Type", "application/json");
+  headers.set("Accept", "application/json");
+  if (init.body) headers.set("Content-Type", "application/json");
   if (["POST", "PUT", "PATCH", "DELETE"].includes(init.method ?? "GET")) {
     // Fetch for each mutation so session rotation and separate tabs cannot leave a stale token.
-    const response = await fetch(`${API_BASE}/auth/csrf-token`, { credentials: "include" });
+    let response: Response;
+    try { response = await fetch(`${API_BASE}/auth/csrf-token`, { credentials: "include", signal: AbortSignal.timeout(15000), headers: { Accept: "application/json" } }); }
+    catch { throw new ApiError(0, null, "Could not reach the CodeKita API. Check its HTTPS URL, CORS configuration, and network availability."); }
     if (!response.ok) throw new ApiError(response.status, null, "Unable to establish a secure request. Try again.");
-    const { token } = await response.json() as { token: string };
+    let payload: unknown;
+    try { payload = await response.json(); }
+    catch { throw new ApiError(response.status, null, "The API did not return a valid CSRF response. Check the backend URL."); }
+    const token = payload && typeof payload === "object" && "token" in payload ? payload.token : undefined;
+    if (typeof token !== "string" || !token) throw new ApiError(response.status, null, "The API returned an invalid CSRF token.");
     headers.set("X-CSRF-TOKEN", token);
   }
-  const res = await fetch(url, {
-    ...init,
-    credentials: "include",
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, { ...init, signal: init.signal ?? AbortSignal.timeout(15000), credentials: "include", headers });
+  } catch {
+    throw new ApiError(0, null, "Could not reach the CodeKita API. Check its HTTPS URL, CORS configuration, and network availability.");
+  }
 
   if (!res.ok) {
     let payload: unknown = null;
@@ -59,7 +79,8 @@ export async function request<T>(
   if (res.status === 204) {
     return undefined as T;
   }
-  return (await res.json()) as T;
+  try { return await res.json() as T; }
+  catch { throw new ApiError(res.status, null, "The CodeKita API returned an invalid or non-JSON response."); }
 }
 
 export const api = {
@@ -73,7 +94,6 @@ export const api = {
     ),
 
   courses: (params?: { page?: number; limit?: number }) => {
-    if (isStaticFrontend) return Promise.resolve(demoCourses(params?.page, params?.limit));
     const search = params
       ? `?${new URLSearchParams(
           Object.fromEntries(

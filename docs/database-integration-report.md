@@ -106,7 +106,8 @@ prerequisite is missing, not that a remote database rejected authentication.
   handle non-JSON and malformed JSON error payloads as ApiError rather than leaking
   a ZodError into frontend error handling.
 
-Added regression tests:
+Historical regression tests (subsequently removed with the test suite; these
+paths are retained only as a record of the original integration work):
 
 - `C:\Users\maizar\Desktop\codekita.id\packages\shared\src\schemas\env.test.ts`
 - `C:\Users\maizar\Desktop\codekita.id\src\server\config\configuration.test.ts`

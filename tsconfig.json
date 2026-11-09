@@ -13,14 +13,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
-      "@codekita/shared": ["packages/shared/src/index.ts"],
-      "@/*": ["src/*"]
+      "@codekita/shared": ["./packages/shared/src/index.ts"],
+      "@/*": ["./src/*"]
     },
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
   "include": ["src/**/*", "packages/shared/src/**/*"],
-  "exclude": ["src/server", "src/common", "node_modules", "dist", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"]
+  "exclude": ["src/server", "src/common", "node_modules", "dist"]
 }

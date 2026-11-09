@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { isStaticFrontend } from "@/lib/mode";
+import { Logo } from "@/components/academy/shared";
 import {
   Button,
   Card,
@@ -41,12 +42,11 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: LoginForm) => {
-    if (isStaticFrontend) { reset(); setServerError("Demo only: input validated, but no login occurred and nothing was saved."); return; }
+    if (isStaticFrontend) { setServerError(t("backendUnavailable")); return; }
     setServerError("");
     const result = await login(data.identifier, data.password);
     if (result.ok) {
@@ -68,9 +68,10 @@ export function LoginPage() {
     <div className="flex min-h-[calc(100vh-160px)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
+          <div className="mb-4 flex justify-center"><Logo /></div>
           <CardTitle className="text-2xl">{t("Sign in")}</CardTitle>
           <CardDescription>
-            {isStaticFrontend ? t("Demo only — use fictional inputs. No authentication or account is created.") : t("Enter your CodeKita account credentials")}
+            {isStaticFrontend ? t("backendUnavailable") : t("Enter your CodeKita account credentials")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,9 +80,9 @@ export function LoginPage() {
               {isStaticFrontend ? t(serverError) : serverError}
             </div>
           )}
-          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/dashboard">{t("Explore demo dashboard")}</Link></Button>}
+          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/paths">{t("browseCurriculum")}</Link></Button>}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <fieldset className="space-y-4">
+            <fieldset className="space-y-4" disabled={isStaticFrontend || isLoading}>
             <div className="space-y-2">
               <Label htmlFor="identifier">{t("Identifier")}</Label>
               <Input
@@ -109,7 +110,7 @@ export function LoginPage() {
               )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isStaticFrontend ? t("Validate demo form") : t("Sign in")}
+              {isStaticFrontend ? t("serviceUnavailable") : t("Sign in")}
             </Button>
             </fieldset>
           </form>

@@ -19,7 +19,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { LessonWorkspace } from '@codekita/shared';
 import { isStaticFrontend } from '@/lib/mode';
+import { useTranslation } from 'react-i18next';
 export function LearnPage() {
+  const { t } = useTranslation('courses');
   const { moduleSlug = '', sectionSlug = '' } = useParams();
   const { user } = useAuth();
   const lesson = useQuery({
@@ -38,7 +40,7 @@ export function LearnPage() {
     return (
       <DataState
         error
-        title="This lesson is not available yet"
+        title={t('lessonUnavailable')}
         description={lesson.error.message}
         retry={() => void lesson.refetch()}
       />
@@ -61,6 +63,7 @@ function Lesson({
   moduleSlug: string;
   sectionSlug: string;
 }) {
+  const { t } = useTranslation('courses');
   const client = useQueryClient();
   const [notes, setNotes] = useState(data.notes),
     [bookmarked, setBookmarked] = useState(data.bookmarked),
@@ -103,7 +106,7 @@ function Lesson({
         className="mb-6 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary"
       >
         <ArrowLeft size={13} />
-        {data.path.title}
+        {t(data.path.slug, { defaultValue: data.path.title })}
       </Link>
       <div className="grid items-start gap-6 xl:grid-cols-[200px_minmax(0,1fr)_190px]">
         <aside className="panel p-4 xl:sticky xl:top-24">
@@ -114,20 +117,20 @@ function Lesson({
           >
             <span className="flex items-center gap-2">
               <List size={15} />
-              Path sections
+              {t('pathSections')}
             </span>
             <span className="xl:hidden">{sectionsOpen ? '−' : '+'}</span>
           </button>
           <div className={cn('mt-5', sectionsOpen ? 'block' : 'hidden xl:block')}>
-            <ProgressBar
+            {!isStaticFrontend && <><ProgressBar
               value={all.length ? (data.completedLessonIds.length / all.length) * 100 : 0}
             />
             <p className="mb-6 mt-2 text-[10px] text-muted-foreground">
-              {data.completedLessonIds.length} / {all.length} completed
-            </p>
+              {data.completedLessonIds.length} / {all.length} {t('completedCount')}
+            </p></>}
             {data.modules.map(module => (
               <div key={module.id} className="mb-5">
-                <h2 className="mb-3 text-xs">{module.title}</h2>
+                <h2 className="mb-3 text-xs">{t(module.slug, { defaultValue: module.title })}</h2>
                 <ul className="space-y-1">
                   {module.lessons.map(section => {
                     const index = all.findIndex(item => item.id === section.id),
@@ -154,12 +157,12 @@ function Lesson({
                             ) : (
                               <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full border border-current" />
                             )}
-                            {section.title}
+                            {t(section.slug, { defaultValue: section.title })}
                           </Link>
                         ) : (
                           <span className="flex gap-2 p-2 text-[11px] leading-5 text-muted-foreground">
                             <LockKeyhole size={12} className="mt-1 shrink-0" />
-                            {section.title}
+                            {t(section.slug, { defaultValue: section.title })}
                           </span>
                         )}
                       </li>
@@ -172,13 +175,13 @@ function Lesson({
         </aside>
         <article className="min-w-0">
           <p className="eyebrow mb-3">
-            Section {String(current + 1).padStart(2, '0')} / {all.length}
+            {t('sectionLabel')} {String(current + 1).padStart(2, '0')} / {all.length}
           </p>
           <h1 className="text-3xl leading-tight sm:text-4xl">{data.title}</h1>
           <div className="my-7 rounded-xl border border-codekita-secondary/20 bg-codekita-secondary/5 p-5">
             <h2 className="mb-3 flex items-center gap-2 text-sm">
               <Target size={16} className="text-codekita-secondary" />
-              What you’ll learn
+              {t('whatYouWillLearn')}
             </h2>
             {data.objectives.length ? (
               <ul className="space-y-2">
@@ -194,14 +197,14 @@ function Lesson({
               </ul>
             ) : (
               <p className="muted">
-                Read the section and demonstrate your understanding in the knowledge check.
+                {t('knowledgeCheckPrompt')}
               </p>
             )}
           </div>
           <Markdown content={data.content ?? 'Content is being prepared by your instructor.'} />
           <section className="panel mt-10 p-6">
-            <p className="eyebrow mb-3">Validate your understanding</p>
-            <h2 className="mb-5 text-xl">Knowledge check</h2>
+            <p className="eyebrow mb-3">{t('validateUnderstanding')}</p>
+            <h2 className="mb-5 text-xl">{t('knowledgeCheck')}</h2>
             {data.assessment ? (
               <fieldset disabled={completed || complete.isPending} className="space-y-3">
                 <legend className="mb-4 text-sm leading-7">{data.assessment.question}</legend>
@@ -225,15 +228,12 @@ function Lesson({
                 ))}
               </fieldset>
             ) : (
-              <p className="muted">
-                An instructor needs to configure this assessment. Completion is disabled rather than
-                bypassed.
-              </p>
+              <p className="muted">{t('assessmentUnavailable')}</p>
             )}
             {completed ? (
               <p role="status" className="mt-5 flex items-center gap-2 text-sm text-primary">
                 <CheckCircle2 size={17} />
-                Section completed
+                {t('completedSection')}
                 {complete.data?.xpAwarded ? ` · +${complete.data.xpAwarded} XP` : ''}
               </p>
             ) : (
@@ -244,7 +244,7 @@ function Lesson({
                 }
                 onClick={() => complete.mutate()}
               >
-                {complete.isPending ? 'Validating…' : 'Mark complete & validate'}
+                {complete.isPending ? t('validating') : t('markCompleteValidate')}
                 <CheckCircle2 size={15} className="ml-2" />
               </Button>
             )}
@@ -256,7 +256,7 @@ function Lesson({
           </section>
           <section className="panel mt-6 p-5 xl:hidden">
             <label className="mb-3 block text-sm" htmlFor="mobile-notes">
-              Your notes
+              {t('yourNotes')}
             </label>
             <textarea
               id="mobile-notes"
@@ -277,7 +277,7 @@ function Lesson({
                   setSaved(false);
                 }}
               />
-              Bookmark this lesson
+              {t('bookmarkLesson')}
             </label>
           </section>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
@@ -285,7 +285,7 @@ function Lesson({
               <Button variant="outline" asChild>
                 <Link to={`/learn/${previous.moduleSlug}/${previous.slug}`}>
                   <ArrowLeft className="mr-2" size={14} />
-                  Previous
+                  {t('previous')}
                 </Link>
               </Button>
             ) : (
@@ -297,41 +297,41 @@ function Lesson({
               onClick={() => save.mutate()}
             >
               <Save size={14} className="mr-2" />
-              {save.isPending ? 'Saving…' : 'Save progress'}
+              {save.isPending ? t('saving') : t('saveProgress')}
             </Button>
             {next && (completed || isStaticFrontend) ? (
               <Button asChild>
                 <Link to={`/learn/${next.moduleSlug}/${next.slug}`}>
-                  Next section
+                  {t('nextSection')}
                   <ArrowRight size={14} className="ml-2" />
                 </Link>
               </Button>
             ) : (
               <Button disabled={!!next} asChild={!next}>
                 {next ? (
-                  'Complete to continue'
+                  t('completeToContinue')
                 ) : (
-                  <Link to={`/paths/${data.path.slug}`}>Back to roadmap</Link>
+                  <Link to={`/paths/${data.path.slug}`}>{t('backToRoadmap')}</Link>
                 )}
               </Button>
             )}
           </div>
           <p className="mt-3 text-xs text-muted-foreground" role="status">
             {isStaticFrontend
-              ? 'Demo preview: notes and progress are not saved.'
+              ? t('publicLessonNotice')
               : save.isError
                 ? save.error.message
                 : dirty
-                  ? 'You have unsaved notes or bookmark changes.'
+                  ? t('unsavedChanges')
                   : saved
-                    ? 'Your changes are saved to your account.'
-                    : 'Notes and bookmarks are saved when you choose Save progress or validate completion.'}
+                    ? t('changesSaved')
+                    : t('saveNotesNotice')}
           </p>
         </article>
         <aside className="sticky top-24 hidden space-y-7 xl:block">
           <div>
             <h2 className="mb-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              On this page
+              {t('onThisPage')}
             </h2>
             <nav
               aria-label="Lesson table of contents"
@@ -353,13 +353,13 @@ function Lesson({
               className="mb-3 flex items-center justify-between text-xs"
               htmlFor="lesson-notes"
             >
-              Your notes
+              {t('yourNotes')}
               <Save size={13} className="text-muted-foreground" />
             </label>
             <textarea
               id="lesson-notes"
               className="field min-h-48 text-xs leading-6"
-              placeholder="Connect the dots. Write it in your own words…"
+              placeholder={t('notesPlaceholder')}
               maxLength={20000}
               value={notes}
               onChange={event => {
@@ -383,7 +383,7 @@ function Lesson({
             </button>
             <p className="mt-4 text-[10px] leading-5 text-muted-foreground">
               {isStaticFrontend ? (
-                'Example notes are not saved.'
+                'Notes remain in memory only and are not saved.'
               ) : (
                 <>
                   Private to your account.

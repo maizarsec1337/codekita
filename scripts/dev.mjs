@@ -11,7 +11,7 @@ if (result.generated) {
 }
 
 const options = { cwd: root, stdio: "inherit", env: environment };
-const build = spawn(process.execPath, [join(root, "scripts", "unified-build.mjs")], options);
+const build = spawn(process.execPath, [join(root, "scripts", "build-backend.mjs")], options);
 const buildCode = await new Promise((resolve, reject) => {
   build.once("error", reject);
   build.once("exit", resolve);
@@ -19,7 +19,7 @@ const buildCode = await new Promise((resolve, reject) => {
 if (buildCode !== 0) process.exit(buildCode ?? 1);
 
 const children = [
-  spawn(process.execPath, [join(root, "dist", "server.js")], options),
+  spawn(process.execPath, [join(root, ".server-build", "server.js")], options),
   spawn(process.execPath, [join(root, "node_modules", "vite", "bin", "vite.js"), "--port", "5173"], options),
 ];
 let stopping = false;

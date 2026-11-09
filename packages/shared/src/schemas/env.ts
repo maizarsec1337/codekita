@@ -48,12 +48,24 @@ export const envSchema = z.object({
   SESSION_NAME: z.string().default("codekita_session"),
   COOKIE_SECURE: boolean(false),
   COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).default("lax"),
-  CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  CORS_ORIGIN: z.string().url().refine(value => {
+    try {
+      const url = new URL(value);
+      return ["https:", "http:"].includes(url.protocol) && value === url.origin;
+    } catch { return false; }
+  }, "CORS_ORIGIN must be one exact browser origin without a trailing slash or path").default("http://localhost:5173"),
   ENABLE_SWAGGER: boolean(true),
   OIDC_ISSUER_URL: z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional()),
   OIDC_CLIENT_ID: z.string().optional(),
   OIDC_CLIENT_SECRET: z.string().optional(),
   OIDC_CALLBACK_URL: z.string().url().optional(),
+}).superRefine((value, context) => {
+  if (value.NODE_ENV === "production" && !value.CORS_ORIGIN.startsWith("https://")) {
+    context.addIssue({ code: "custom", path: ["CORS_ORIGIN"], message: "Production CORS requires an HTTPS frontend origin" });
+  }
+  if (value.NODE_ENV !== "production" && value.COOKIE_SAME_SITE === "none" && !value.COOKIE_SECURE) {
+    context.addIssue({ code: "custom", path: ["COOKIE_SECURE"], message: "SameSite=None requires Secure cookies" });
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -2,8 +2,12 @@ import { Award, Printer, ShieldCheck } from 'lucide-react';
 import { useLearning } from '@/hooks/useAcademy';
 import { CardSkeletons, DataState, PageHeading } from '@/components/academy/shared';
 import { Button } from '@/components/ui/button';
+import { isStaticFrontend } from '@/lib/mode';
+import { useTranslation } from 'react-i18next';
 export function CertificatesPage() {
+  const { t } = useTranslation('common');
   const learning = useLearning();
+  if (isStaticFrontend) return <><PageHeading eyebrow={t('personalDataUnavailable')} title="Your certificates" description={t('backendRequired')} /><DataState title={t('personalDataUnavailable')} description={t('backendRequired')} /></>;
   if (learning.isPending) return <CardSkeletons />;
   if (learning.isError)
     return (

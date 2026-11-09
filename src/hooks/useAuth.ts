@@ -8,7 +8,7 @@ export function useAuth() {
   const { user, isLoading, setUser, setLoading } = useAuthStore();
 
   const login = async (email: string, password: string) => {
-    if (isStaticFrontend) return { ok: false, error: new Error("Demo mode: authentication is unavailable.") };
+    if (isStaticFrontend) return { ok: false, error: new Error("Authentication requires a configured CodeKita backend.") };
     setLoading(true);
     try {
       const { user: u } = (await api.auth.login(email, password)) as { user: SessionPayload };
@@ -23,7 +23,7 @@ export function useAuth() {
   };
 
   const register = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    if (isStaticFrontend) return { ok: false, error: new Error("Demo mode: registration is unavailable.") };
+    if (isStaticFrontend) return { ok: false, error: new Error("Registration requires a configured CodeKita backend.") };
     setLoading(true);
     try {
       const { user: u } = (await api.auth.register(email, password, firstName, lastName)) as { user: SessionPayload };

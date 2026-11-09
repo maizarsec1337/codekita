@@ -39,9 +39,18 @@ export interface PathSummary {
   academy: Academy; difficulty: string; estimatedMinutes: number;
   skills: string[]; prerequisites: string[]; moduleCount: number; lessonCount: number;
 }
+export const pathSummarySchema = z.object({
+  id: z.string().min(1), slug, title: z.string().min(1), description: z.string().nullable(),
+  academy: academySchema, difficulty: z.string().min(1), estimatedMinutes: z.number().int().nonnegative(),
+  skills: z.array(z.string()), prerequisites: z.array(z.string()), moduleCount: z.number().int().nonnegative(), lessonCount: z.number().int().nonnegative(),
+});
 export interface SectionSummary { id: string; slug: string; title: string; order: number }
 export interface ModuleSummary { id: string; slug: string; title: string; order: number; lessons: SectionSummary[] }
 export interface PathDetail extends PathSummary { modules: ModuleSummary[] }
+export const pathDetailSchema = pathSummarySchema.extend({ modules: z.array(z.object({
+  id: z.string().min(1), slug, title: z.string().min(1), order: z.number().int().nonnegative(),
+  lessons: z.array(z.object({ id: z.string().min(1), slug, title: z.string().min(1), order: z.number().int().nonnegative() })),
+})) });
 export interface EnrollmentSummary {
   id: string; path: PathSummary; completedLessonIds: string[]; progress: number;
   next: { moduleSlug: string; sectionSlug: string } | null;

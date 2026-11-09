@@ -14,6 +14,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Env } from "@codekita/shared";
 import { cookies, validCsrf } from "./common/security";
+import { projectRoot } from "./config/project-root";
 
 // Use the plugin's Fastify types consistently: pnpm can install a different
 // Fastify minor alongside Nest's adapter than the direct application dependency.
@@ -93,16 +94,17 @@ async function bootstrap() {
   // Production: serve frontend static assets + SPA fallback.
   // /api/* is owned by NestJS controllers; unknown API paths return JSON 404.
   if (nodeEnv === "production") {
-    const publicDir = join(process.cwd(), "dist");
+    const publicDir = join(projectRoot, "dist");
     if (existsSync(publicDir)) {
       await fastify.register(fastifyStatic, { root: publicDir, serve: false });
 
       const frontendFallback: FrontendHandler = (request, reply) => {
         const pathname = request.url.split("?")[0];
-        if (request.method === "GET" && (pathname.startsWith("/assets/") || pathname === "/favicon.svg")) {
+        const read = request.method === "GET" || request.method === "HEAD";
+        if (read && (pathname.startsWith("/assets/") || /^\/status\/(403|404|500|503)\.html$/.test(pathname) || ["/favicon.jpg", "/catalogue.json"].includes(pathname))) {
           return reply.sendFile(pathname.slice(1), publicDir);
         }
-        if (request.method === "GET" && !pathname.startsWith("/api") && !pathname.startsWith("/runtime/") && pathname !== "/server.js") {
+        if (read && /text\/html/i.test(request.headers.accept ?? "") && !/^\/(?:api|assets|status|runtime)(?:\/|$)/i.test(pathname) && !pathname.includes(".") && !pathname.startsWith("/src/")) {
           return reply.sendFile("index.html", publicDir);
         }
         return reply.code(404).send({

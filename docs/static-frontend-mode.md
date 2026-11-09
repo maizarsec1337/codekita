@@ -26,31 +26,33 @@ Get-NetTCPConnection -State Listen -LocalPort 5173 | ForEach-Object {
 
 Stop a confirmed CodeKita Vite server from the terminal that launched it with
 Ctrl+C. Check its parent process if the port becomes occupied again; do not kill
-unrelated Node processes or VS Code. `dev:fullstack` and the standalone
-`scripts/check-dev.mjs` also launch Vite and therefore must not run concurrently
-with the static dev server. The browser smoke test starts its own server and
-requires port 5173 to be free.
+unrelated processes. `dev:fullstack` also launches Vite and must not run
+concurrently with the static dev server.
+
+## Production validation and InfinityFree build
 
 ```powershell
-pnpm lint:frontend
-pnpm typecheck:frontend
-pnpm build:frontend
-pnpm test:frontend-browser
+npm run typecheck:frontend
+npm run build
+npm run preview
 ```
 
-The frontend build is written to `C:\Users\maizar\Desktop\codekita.id\dist\frontend-static`.
-Static hosting must provide an SPA fallback to `index.html` for direct route
-loads. The browser smoke test requires Chrome (or `CHROME_PATH`) and an unused
-port 5173; it starts and stops its own Vite process.
+`npm run build` typechecks and produces a clean static release directly in
+`C:\Users\maizar\Desktop\codekita.id\dist`. Upload the *contents* of this one
+folder to the domain's `htdocs` root. It includes `index.html`, content-hashed
+`assets`, the real published repository curriculum in `catalogue.json`,
+`favicon.jpg`, status documents and `.htaccess`. Static hosting must preserve the
+`.htaccess` SPA fallback for direct routes. Build and typecheck require no local
+backend or database.
 
-`C:\Users\maizar\Desktop\codekita.id\src\data\static-demo.ts` adapts the
-existing local starter curriculum and contains example dashboard, profile and
-leaderboard data. A visible banner identifies all content as a demo. Login and
-registration forms validate fictional input locally, no user session or admin privilege is created, and
-enrollment, saved progress, assessment completion and curriculum writes are
-unavailable. The admin page is a public **preview only**, not an authorization
-mechanism. Client-side guards are not a security boundary: the real backend must
-enforce authentication and authorization on every protected operation.
+The public curriculum is authored in
+`C:\Users\maizar\Desktop\codekita.id\packages\shared\src\starter-content.ts`.
+Only paths explicitly marked published are emitted; no account activity or
+assessment answer keys enter the public JSON. Search, academy/difficulty filters,
+path detail and read-only lesson previews use this catalogue. Login, enrolment,
+saved progress, assessment completion and curriculum administration still need
+a separately hosted CodeKita API. Client-side route guards are not a security
+boundary: the real backend must enforce authentication and authorization.
 
 The original API clients, backend routes, Prisma files and normal `dev`, `build`
 and `start` scripts remain available. The original full-stack launcher is now

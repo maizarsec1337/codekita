@@ -3,9 +3,27 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, ShieldCheck, Trophy } from 'lucide-react';
 import { academyApi } from '@/lib/academy-api';
 import { academies, CardSkeletons, DataState, PageHeading } from '@/components/academy/shared';
-import { cn } from '@/lib/utils';
+import { isStaticFrontend } from '@/lib/mode';
+import { useTranslation } from 'react-i18next';
+import { Reveal } from '@/components/motion';
 export function LeaderboardPage() {
-  const board = useQuery({ queryKey: ['leaderboard'], queryFn: academyApi.leaderboard });
+  const { t } = useTranslation('common');
+  const board = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: academyApi.leaderboard,
+    enabled: !isStaticFrontend,
+  });
+  if (isStaticFrontend)
+    return (
+      <div className="page-container py-12">
+        <PageHeading
+          eyebrow="Build alongside curious minds"
+          title="The learning leaderboard"
+          description="Ranked by validated XP. Public aliases protect learner identities; account emails are never displayed."
+        />
+        <DataState title={t('personalDataUnavailable')} description={t('backendRequired')} />
+      </div>
+    );
   return (
     <div className="page-container py-12">
       <PageHeading
@@ -68,32 +86,33 @@ export function AcademyPage() {
         description="Programming, Cybersecurity, and AI Engineering. Different disciplines, the same commitment to practical understanding."
       />
       <div className="grid gap-6 md:grid-cols-3">
-        {Object.entries(academies).map(([key, academy]) => (
-          <Link
-            key={key}
-            to={`/paths?academy=${key}`}
-            className="panel group p-7 transition-colors hover:border-primary/40"
-          >
-            <span
-              className={cn('mb-9 inline-flex rounded-2xl p-5', academy.color, academy.background)}
+        {Object.entries(academies).map(([key, academy], index) => (
+          <Reveal key={key} delay={index * 65} className="h-full">
+            <Link
+              to={`/paths?academy=${key}`}
+              className="panel motion-card group block h-full p-6 sm:p-7"
             >
-              <academy.icon size={35} />
-            </span>
-            <h2 className="text-2xl">{academy.name}</h2>
-            <p className="muted mt-4">{academy.description}</p>
-            <ul className="mb-8 mt-6 space-y-3">
-              {academy.tags.map(tag => (
-                <li key={tag} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ArrowRight size={12} className={academy.color} />
-                  {tag}
-                </li>
-              ))}
-            </ul>
-            <span className="flex items-center justify-between border-t border-border pt-5 text-sm text-primary">
-              Explore learning paths
-              <ArrowUpRight size={16} />
-            </span>
-          </Link>
+              <img
+                src={academy.illustration}
+                alt={academy.illustrationAlt}
+                className="mb-6 h-56 w-full object-contain sm:h-60"
+              />
+              <h2 className="text-2xl">{academy.name}</h2>
+              <p className="muted mt-4">{academy.description}</p>
+              <ul className="mb-8 mt-6 space-y-3">
+                {academy.tags.map(tag => (
+                  <li key={tag} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ArrowRight size={12} className={academy.color} />
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+              <span className="flex items-center justify-between border-t border-border pt-5 text-sm text-primary">
+                Explore learning paths
+                <ArrowUpRight size={16} className="motion-arrow" />
+              </span>
+            </Link>
+          </Reveal>
         ))}
       </div>
     </div>

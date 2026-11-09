@@ -3,7 +3,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ArrowLeft, Compass, Info, Languages, LockKeyhole, RotateCcw, ServerCrash, ShieldCheck, Terminal, Wrench } from "lucide-react";
+import { ArrowLeft, Compass, Info, Languages, LockKeyhole, RotateCcw, ServerCrash, ShieldCheck, Wrench } from "lucide-react";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const read = (path) => readFile(resolve(root, path), "utf8");
@@ -28,7 +28,7 @@ export async function generateErrorDocuments({ check = false } = {}) {
     body { margin: 0; } a { color: inherit; } svg { flex-shrink: 0; }
     [hidden], html:lang(id) [data-language="en"], html:lang(en) [data-language="id"] { display: none !important; }
     .ck-static-logo { display: inline-flex; align-items: center; flex-shrink: 0; gap: 10px; text-decoration: none; }
-    .ck-static-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; background: rgb(var(--ck-primary)); color: rgb(var(--ck-primary-foreground)); }
+    .ck-static-mark { width: 36px; height: 36px; display: block; flex: 0 0 36px; border-radius: 8px; object-fit: contain; }
     .ck-static-wordmark { font-size: 20px; font-weight: 700; letter-spacing: -.025em; }
     .ck-static-wordmark b { color: rgb(var(--ck-primary)); }
     .ck-static-academy { margin-left: 8px; padding: 2px 6px; border: 1px solid rgb(var(--ck-border)); border-radius: 4px; font: 9px "JetBrains Mono", ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--ck-text-secondary)); }
@@ -85,13 +85,13 @@ export async function generateErrorDocuments({ check = false } = {}) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title data-label-id="${escape(title("id"))}" data-label-en="${escape(title("en"))}">${escape(title("id"))}</title>
-  <link rel="icon" href="data:image/svg+xml,${encodeURIComponent(renderToStaticMarkup(createElement(Terminal, { color: `rgb(${tokensSource.match(/--ck-primary:\s*([\d ]+);/)[1].trim()})` })))}">
+  <link rel="icon" type="image/jpeg" href="/favicon.jpg">
   <style>${extraStyles}\n${styles}</style>
 </head>
 <body class="ck-error">
   <a href="#error-content" class="ck-static-skip">${text("skip")}</a>
   <header class="ck-error-header">
-    <a class="ck-static-logo" href="/" ${label("logoHome")}><span class="ck-static-mark">${icon(Terminal, 23, 2.5)}</span><span class="ck-static-wordmark">code<b>kita</b><span class="ck-static-academy">academy</span></span></a>
+    <a class="ck-static-logo" href="/" ${label("logoHome")}><img class="ck-static-mark" src="/favicon.jpg" alt=""><span class="ck-static-wordmark">code<b>kita</b><span class="ck-static-academy">academy</span></span></a>
     <label class="ck-static-language" id="error-language-control" hidden>${icon(Languages)}<select id="error-language" ${label("language")}><option value="id">${escape(idCommon.indonesian)}</option><option value="en">${escape(enCommon.english)}</option></select></label>
   </header>
   <main id="error-content" class="ck-error-main" aria-labelledby="error-heading" tabindex="-1">

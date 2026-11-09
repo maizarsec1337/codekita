@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Mail, ShieldCheck, UserRound } from "lucide-react";
+import { LockKeyhole, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeading } from "@/components/academy/shared";
 import { Button } from "@/components/ui/button";
 import { isStaticFrontend } from "@/lib/mode";
-import { demoProfile } from "@/data/static-demo";
 export function ProfilePage() {
   const { t } = useTranslation("common");
   const auth = useAuth();
-  const user = isStaticFrontend ? demoProfile : auth.user;
-  return <><PageHeading eyebrow={t("accountIdentity")} title={t("profile")} description={isStaticFrontend ? t("profileDemo") : t("profileReal")} /><div className="panel max-w-2xl p-7"><div className="mb-7 flex items-center gap-4"><span className="rounded-2xl bg-primary/10 p-4 text-primary"><UserRound size={28} /></span><div><h2 className="text-xl">{user?.email.split("@")[0]}</h2><p className="mt-1 text-xs text-muted-foreground">{t("engineer")}</p></div></div><dl className="space-y-6"><div><dt className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Mail size={13} />{t("accountEmail")}</dt><dd className="break-all text-sm">{user?.email}</dd></div><div><dt className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck size={13} />{t("roles")}</dt><dd className="text-sm">{user?.roles.join(", ")}</dd></div><div><dt className="mb-2 text-xs text-muted-foreground">{t("accountId")}</dt><dd className="break-all font-mono text-xs">{user?.userId}</dd></div></dl><p className="muted mt-7 border-t border-border pt-5">{isStaticFrontend ? t("demoDetails") : t("realDetails")}</p></div></>;
+  if (isStaticFrontend) return <><PageHeading eyebrow={t("accountIdentity")} title={t("profile")} description={t("profileDemo")} /><div className="panel max-w-2xl p-7" role="status"><LockKeyhole className="mb-4 text-primary" size={25} /><p className="muted">{t("backendRequired")}</p></div></>;
+  const user = auth.user;
+  return <><PageHeading eyebrow={t("accountIdentity")} title={t("profile")} description={t("profileReal")} /><div className="panel max-w-2xl p-7"><div className="mb-7 flex items-center gap-4"><span className="rounded-2xl bg-primary/10 p-4 text-primary"><UserRound size={28} /></span><div><h2 className="text-xl">{user?.email.split("@")[0]}</h2><p className="mt-1 text-xs text-muted-foreground">{t("engineer")}</p></div></div><dl className="space-y-6"><div><dt className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Mail size={13} />{t("accountEmail")}</dt><dd className="break-all text-sm">{user?.email}</dd></div><div><dt className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck size={13} />{t("roles")}</dt><dd className="text-sm">{user?.roles.join(", ")}</dd></div><div><dt className="mb-2 text-xs text-muted-foreground">{t("accountId")}</dt><dd className="break-all font-mono text-xs">{user?.userId}</dd></div></dl><p className="muted mt-7 border-t border-border pt-5">{t("realDetails")}</p></div></>;
 }
 export function SettingsPage() {
   const { t } = useTranslation("common");

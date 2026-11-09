@@ -12,7 +12,7 @@ export function AdminProtectedRoute({
 }) {
   const { user, isLoading } = useAuth();
 
-  if (isStaticFrontend) return <>{children}</>;
+  if (isStaticFrontend) return <Navigate to="/" replace />;
 
   if (isLoading) {
     return (

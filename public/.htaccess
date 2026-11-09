@@ -1,13 +1,10 @@
 # CodeKita static frontend — install in this domain's htdocs directory.
 # Merge with existing site rules; never overwrite hosting-level configuration.
 # Local documents preserve the original status (unlike external redirects).
-
-
-
-
-
+Options -MultiViews
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteBase /
 
   # Leave real files/directories and error documents to the web server.
   RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -21,10 +18,26 @@
   # Only browser page navigations use SPA history fallback. Do not swallow POSTs.
   RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
   RewriteCond %{HTTP_ACCEPT} text/html [NC]
-  RewriteCond %{DOCUMENT_ROOT}/index.html -f
   RewriteRule ^ /index.html [L]
 </IfModule>
 ErrorDocument 403 /status/403.html
 ErrorDocument 404 /status/404.html
 ErrorDocument 500 /status/500.html
 ErrorDocument 503 /status/503.html
+
+# Keep the entry point and public curriculum fresh after each deployment.
+# Vite's content-hashed build files below are safe to cache for one year.
+<IfModule mod_headers.c>
+  <Files "index.html">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </Files>
+  <Files "catalogue.json">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </Files>
+  <Files "favicon.jpg">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </Files>
+  <FilesMatch "-[A-Za-z0-9_-]{8,}\.(?:js|css|jpg|jpeg|png|svg|webp|avif|gif|woff2?|ttf|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

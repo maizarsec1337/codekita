@@ -1,10 +1,11 @@
 import { spawn } from "node:child_process";
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
+import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const runtime = join(root, "dist", "runtime");
+const output = join(root, ".server-build");
+const runtime = join(output, "runtime");
 const shared = join(runtime, "packages", "shared", "src", "index.js");
 
 function run(cli, args) {
@@ -29,11 +30,11 @@ async function rewriteAliases(directory) {
   }
 }
 
+// This dedicated compiler output is never the frontend document root.
+await rm(output, { recursive: true, force: true });
 await mkdir(runtime, { recursive: true });
-await run("typescript/bin/tsc", ["-p", "tsconfig.json", "--noEmit"]);
 await run("typescript/bin/tsc", ["-p", "tsconfig.server.json"]);
 await rewriteAliases(runtime);
-await writeFile(join(root, "dist", "server.js"), 'require("./runtime/src/server/main.js");\n');
-await run("vite/bin/vite.js", ["build"]);
-console.log("Unified build complete: dist/server.js and dist/index.html");
+await writeFile(join(output, "server.js"), 'require("./runtime/src/server/main.js");\n');
+console.log("Backend compiled to .server-build/server.js. Do not upload this directory to InfinityFree.");
 

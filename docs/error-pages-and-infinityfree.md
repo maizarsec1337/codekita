@@ -1,6 +1,6 @@
 # CodeKita error pages and InfinityFree deployment
 
-Implementation and local verification: November 8, 2026.
+Implementation and local verification: November 9, 2026.
 
 ## Design audit and scope
 
@@ -8,7 +8,7 @@ The existing public homepage and workspace shell use the shared `--ck-*` tokens:
 background `#090D13`, surface `#121922`, border `#293443`, primary `#B8F34A`,
 foreground `#F3F6FA`, and secondary text `#9AA8BA`. The project also contains older
 legacy colors and a dashboard-specific palette; neither was used to invent a new
-error-page identity. Error pages reuse the terminal logo, Inter/system typography,
+error-page identity. Error pages reuse the CodeKita image logo, Inter/system typography,
 JetBrains Mono labels, 40px grid, 16px panel corners, existing Button component,
 subtle .5s entrance transition, and both reduced-motion preferences.
 
@@ -55,17 +55,17 @@ Run from `C:\Users\maizar\Desktop\codekita.id`:
 ```powershell
 pnpm run typecheck
 pnpm run lint
-pnpm test
 pnpm run build:static
 pnpm run preview:static
 ```
 
 The correct static output is:
 
-`C:\Users\maizar\Desktop\codekita.id\dist\frontend-static`
+`C:\Users\maizar\Desktop\codekita.id\dist`
 
-Do **not** upload the parent `C:\Users\maizar\Desktop\codekita.id\dist` directory:
-it can also contain full-stack server output, test reports and screenshots.
+Upload the **contents** of `dist/` so the site's document root directly contains
+the entry page and Vite static assets. `npm run build` cleans this folder before
+producing the static release; never upload `.env`, source files or server output.
 
 Build scripts regenerate the four standalone HTML files before Vite copies public
 assets. To regenerate without building, run `pnpm run generate:error-documents`.
@@ -78,8 +78,8 @@ To verify they are current, run `node scripts/generate-error-documents.mjs --che
    account may already have one.
 2. Upload the **contents** of the static output directory to the domain's document
    root: `/htdocs` or `/<your-domain>/htdocs` as shown in the hosting file manager.
-   The root should directly contain `index.html`, `assets`, `status`, `favicon.svg`
-   and `.htaccess`. Enable hidden-file visibility so `.htaccess` is included.
+   The root should directly contain `index.html`, `assets`, `status`, `catalogue.json`,
+   `favicon.jpg` and `.htaccess`. Enable hidden-file visibility so `.htaccess` is included.
 3. If the domain already has rules, merge the CodeKita rules into that domain's
    `.htaccess`. Preserve SSL/canonical-domain redirects, PHP applications, API
    routing and security rules. Put any site-specific rewrites **before** the SPA
@@ -156,11 +156,13 @@ account, or deployment credentials were available in this task. Before productio
 Vercel settings in `C:\Users\maizar\Desktop\codekita.id\vercel.json` remain
 unchanged. Vercel does not use `.htaccess`; this work does not promise custom
 Vercel infrastructure-error interception. Its existing SPA rewrites and static
-build output continue to be covered by the existing configuration tests.
+build output are configured in `vercel.json`; the test suite has been removed.
 
-## Automated verification and artifacts
+## Historical automated verification and artifacts
 
-Verified locally:
+The following checks were run before the test suite and browser harness were
+removed. They are historical results, not commands or checks available in the
+current repository:
 
 - Frontend and backend TypeScript checks; repository ESLint with zero warnings.
 - 144 tests across 23 files, including 30 error-specific tests and matching ID/EN
@@ -175,18 +177,10 @@ Verified locally:
   ID/EN content with JavaScript disabled. No API calls, failed requests, uncaught
   exceptions, console errors or page overflow in the browser run.
 
-Run the browser suite after building (preview port 4173 must be free):
-
-```powershell
-node scripts/static-browser-smoke.mjs --preview
-```
-
-The harness uses installed Chrome and Node's built-in WebSocket; it installs no
-browser automation library. Set `CHROME_PATH` if Chrome is elsewhere.
-
-Screenshots: `C:\Users\maizar\Desktop\codekita.id\dist\qa-errors`.
-The checks are not a complete WCAG audit or a substitute for real assistive-device
-testing and a staging-host HTTP check.
+The browser and unit-test results above are historical verification records; the
+repository's test suite and browser harness have since been removed. These
+records are not a substitute for current real assistive-device testing or a
+staging-host HTTP check.
 
 ## Files added or modified by this task
 
@@ -219,10 +213,6 @@ Hosting, generation and verification:
 - `C:\Users\maizar\Desktop\codekita.id\public\status\500.html`
 - `C:\Users\maizar\Desktop\codekita.id\public\status\503.html`
 - `C:\Users\maizar\Desktop\codekita.id\scripts\generate-error-documents.mjs`
-- `C:\Users\maizar\Desktop\codekita.id\scripts\error-documents.test.ts`
-- `C:\Users\maizar\Desktop\codekita.id\scripts\error-browser-checks.mjs`
-- `C:\Users\maizar\Desktop\codekita.id\scripts\static-browser-smoke.mjs` (existing checks preserved)
-- `C:\Users\maizar\Desktop\codekita.id\src\pages\error-page.test.tsx`
 - `C:\Users\maizar\Desktop\codekita.id\package.json` (scripts only)
 - `C:\Users\maizar\Desktop\codekita.id\docs\error-pages-and-infinityfree.md`
 

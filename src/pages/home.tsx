@@ -21,9 +21,11 @@ import {
 } from 'lucide-react';
 import { academyApi } from '@/lib/academy-api';
 import { useAuth } from '@/hooks/useAuth';
+import { Reveal } from '@/components/motion';
 import { Button } from '@/components/ui/button';
 import { academies, CardSkeletons, DataState, PathCard } from '@/components/academy/shared';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 function LearningPreview() {
   const [answer, setAnswer] = useState<number>();
@@ -107,7 +109,8 @@ function HeroWorkspace() {
               <span key={item} className="h-2 w-2 rounded-full bg-border" />
             ))}
           </div>
-          <span className="font-mono text-[10px] tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2 font-mono text-[10px] tracking-wider text-muted-foreground">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary" />
             YOUR ENGINEERING WORKSPACE
           </span>
           <LockKeyhole size={12} className="text-muted-foreground" />
@@ -187,7 +190,7 @@ function HeroWorkspace() {
                     <p className="mt-1 text-[11px] text-muted-foreground">{step.description}</p>
                     {step.active && (
                       <div className="mt-3 flex items-center gap-2 text-[10px] text-primary">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary" />
                         YOUR NEXT MILESTONE
                         <ArrowRight size={12} className="ml-auto" />
                       </div>
@@ -198,7 +201,10 @@ function HeroWorkspace() {
             </div>
             <div className="mt-6 flex items-center gap-2 border-t border-border pt-4 font-mono text-[10px] text-muted-foreground">
               <ShieldCheck size={13} className="text-codekita-secondary" />
-              Structured learning. Validated progression.
+              <span>
+                $ curriculum --status: ready
+                <span aria-hidden="true" className="terminal-cursor" />
+              </span>
             </div>
           </div>
         </div>
@@ -217,54 +223,95 @@ function HeroWorkspace() {
     </div>
   );
 }
+function CatalogueSection() {
+  const { t } = useTranslation('courses');
+  const paths = useQuery({ queryKey: ['paths'], queryFn: academyApi.paths });
+  return (
+    <section className="border-y border-border bg-card/30 py-20">
+      <div className="page-container">
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow mb-3">A clear way forward</p>
+            <h2 className="section-heading">Less guessing. More building.</h2>
+          </div>
+          <Link to="/paths" className="flex items-center gap-2 text-sm text-primary">
+            Explore all paths <ArrowRight size={16} />
+          </Link>
+        </div>
+        {paths.isPending ? (
+          <CardSkeletons />
+        ) : paths.isError ? (
+          <DataState
+            error
+            title={t('catalogueErrorTitle')}
+            description={t('catalogueErrorDescription')}
+            retry={() => void paths.refetch()}
+          />
+        ) : paths.data.length ? (
+          <div className="grid gap-5 md:grid-cols-3">
+            {paths.data.slice(0, 3).map(path => (
+              <PathCard key={path.id} path={path} />
+            ))}
+          </div>
+        ) : (
+          <DataState title={t('noPathsFound')} description={t('emptyCatalogue')} />
+        )}
+      </div>
+    </section>
+  );
+}
 export function HomePage() {
   const { user } = useAuth();
-  const paths = useQuery({ queryKey: ['paths'], queryFn: academyApi.paths });
   return (
     <>
       <section className="relative overflow-hidden border-b border-border/60">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgb(var(--ck-primary)/0.05),transparent_55%)]" />
+        <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0" />
+        <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0" />
         <div className="page-container relative grid items-center gap-16 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-28">
-          <div>
-            <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Your next chapter starts here
-              <ChevronRight size={12} />
-            </p>
-            <h1 className="max-w-2xl text-[clamp(2.75rem,5vw,4.7rem)] font-semibold leading-[1.09] tracking-[-0.055em]">
-              Build Skills.
-              <br />
-              Solve Challenges.
-              <br />
-              <span className="text-primary">Become an Engineer.</span>
-            </h1>
-            <p className="mt-7 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-              Pelajari Programming, Cybersecurity, dan AI Engineering melalui pembelajaran
-              terstruktur, praktik interaktif, dan tantangan berbasis kemampuan.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button size="lg" asChild>
-                <Link to={user ? '/paths' : '/register'}>
-                  Mulai Belajar
-                  <ArrowRight size={16} className="ml-3" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/paths">Jelajahi Learning Paths</Link>
-              </Button>
+          <Reveal>
+            <div>
+              <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                Your next chapter starts here
+                <ChevronRight size={12} />
+              </p>
+              <h1 className="max-w-2xl text-[clamp(2.75rem,5vw,4.7rem)] font-semibold leading-[1.09] tracking-[-0.055em]">
+                Build Skills.
+                <br />
+                Solve Challenges.
+                <br />
+                <span className="text-primary">Become an Engineer.</span>
+              </h1>
+              <p className="mt-7 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+                Pelajari Programming, Cybersecurity, dan AI Engineering melalui pembelajaran
+                terstruktur, praktik interaktif, dan tantangan berbasis kemampuan.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button size="lg" asChild>
+                  <Link to={user ? '/paths' : '/register'}>
+                    Mulai Belajar
+                    <ArrowRight size={16} className="ml-3" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/paths">Jelajahi Learning Paths</Link>
+                </Button>
+              </div>
+              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] text-muted-foreground">
+                {['Learn at your pace', 'Practice with purpose', 'Progress that matters'].map(
+                  item => (
+                    <span className="flex items-center gap-1.5" key={item}>
+                      <CheckCircle2 size={13} className="text-primary" />
+                      {item}
+                    </span>
+                  )
+                )}
+              </div>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] text-muted-foreground">
-              {['Learn at your pace', 'Practice with purpose', 'Progress that matters'].map(
-                item => (
-                  <span className="flex items-center gap-1.5" key={item}>
-                    <CheckCircle2 size={13} className="text-primary" />
-                    {item}
-                  </span>
-                )
-              )}
-            </div>
-          </div>
-          <HeroWorkspace />
+          </Reveal>
+          <Reveal delay={100}>
+            <HeroWorkspace />
+          </Reveal>
         </div>
         <div className="page-container grid gap-5 border-t border-border/60 py-6 text-xs text-muted-foreground sm:grid-cols-3">
           {[
@@ -290,76 +337,43 @@ export function HomePage() {
           </p>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          {Object.entries(academies).map(([key, academy]) => (
-            <Link
-              to={`/paths?academy=${key}`}
-              key={key}
-              className="panel group relative p-7 transition-colors hover:border-muted-foreground"
-            >
-              <div className="mb-8 flex items-start justify-between">
-                <span className={cn('rounded-xl p-3', academy.background, academy.color)}>
-                  <academy.icon size={27} strokeWidth={1.5} />
-                </span>
+          {Object.entries(academies).map(([key, academy], index) => (
+            <Reveal key={key} delay={index * 65} className="h-full">
+              <Link
+                to={`/paths?academy=${key}`}
+                className="panel motion-card group relative block h-full p-7"
+              >
+                <img
+                  src={academy.illustration}
+                  alt={academy.illustrationAlt}
+                  className="mb-5 h-56 w-full object-contain sm:h-60"
+                />
                 <ArrowUpRight
                   size={17}
-                  className="text-muted-foreground transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
+                  className="motion-arrow absolute right-7 top-7 text-muted-foreground"
                 />
-              </div>
-              <h3 className="text-xl">
-                {academy.name}
-                <br />
-                <span className="text-muted-foreground">Academy</span>
-              </h3>
-              <p className="muted mt-4">{academy.description}</p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {academy.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="rounded border border-border bg-background/40 px-2 py-1 text-[10px] text-muted-foreground"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </Link>
+                <h3 className="text-xl">
+                  {academy.name}
+                  <br />
+                  <span className="text-muted-foreground">Academy</span>
+                </h3>
+                <p className="muted mt-4">{academy.description}</p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {academy.tags.map(tag => (
+                    <span
+                      key={tag}
+                      className="rounded border border-border bg-background/40 px-2 py-1 text-[10px] text-muted-foreground"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
-      <section className="border-y border-border bg-card/30 py-20">
-        <div className="page-container">
-          <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow mb-3">A clear way forward</p>
-              <h2 className="section-heading">Less guessing. More building.</h2>
-            </div>
-            <Link to="/paths" className="flex items-center gap-2 text-sm text-primary">
-              Explore all paths
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-          {paths.isPending ? (
-            <CardSkeletons />
-          ) : paths.isError ? (
-            <DataState
-              error
-              title="Catalogue temporarily unavailable"
-              description="Published paths will appear when the content service is available."
-              retry={() => void paths.refetch()}
-            />
-          ) : paths.data.length ? (
-            <div className="grid gap-5 md:grid-cols-3">
-              {paths.data.slice(0, 3).map(path => (
-                <PathCard key={path.id} path={path} />
-              ))}
-            </div>
-          ) : (
-            <DataState
-              title="Your next path is on its way"
-              description="The curriculum is being prepared. Explore the interactive preview below while the first paths are published."
-            />
-          )}
-        </div>
-      </section>
+      <CatalogueSection />
       <section className="page-container py-20 sm:py-24">
         <div className="mb-12 text-center">
           <p className="eyebrow mb-3">The CodeKita approach</p>
@@ -471,7 +485,7 @@ export function HomePage() {
         </div>
       </section>
       <section className="page-container pb-20">
-        <div className="academy-grid panel relative overflow-hidden px-6 py-14 text-center sm:py-20">
+        <div className="panel relative overflow-hidden px-6 py-14 text-center sm:py-20">
           <span className="mb-5 inline-flex rounded-full border border-primary/30 bg-background p-3 text-primary">
             <Terminal size={25} />
           </span>

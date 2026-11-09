@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 import { ensureLocalSessionSecret } from "./ensure-environment.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const serverEntry = resolve(root, "dist", "server.js");
+const serverEntry = resolve(root, ".server-build", "server.js");
 
 if (!existsSync(serverEntry)) {
-  console.error("[start] Production build not found. Run `npm run build` before `npm start`.");
+  console.error("[start] Backend build not found. Run `npm run build:backend` before `npm start` on your Node.js host.");
   process.exit(1);
 }
 

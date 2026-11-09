@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title data-label-id="403 · Akses dibatasi | CodeKita" data-label-en="403 · Restricted access | CodeKita">403 · Akses dibatasi | CodeKita</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22rgb(184%20243%2074)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20class%3D%22lucide%20lucide-terminal%22%20aria-hidden%3D%22true%22%3E%3Cpath%20d%3D%22M12%2019h8%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22m4%2017%206-6-6-6%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E">
+  <link rel="icon" type="image/jpeg" href="/favicon.jpg">
   <style>
     :root { color-scheme: dark; --ck-bg: 9 13 19;
 --ck-surface: 18 25 34;
@@ -15,8 +15,7 @@
 --ck-primary: 184 243 74;
 --ck-primary-foreground: 9 13 19;
 --ck-secondary: 54 201 232;
---ck-secondary-foreground: 9 13 1
-9;
+--ck-secondary-foreground: 9 13 19;
 --ck-purple: 167 139 250;
 --ck-purple-foreground: 9 13 19;
 --ck-text-primary: 243 246 250;
@@ -27,7 +26,7 @@
     body { margin: 0; } a { color: inherit; } svg { flex-shrink: 0; }
     [hidden], html:lang(id) [data-language="en"], html:lang(en) [data-language="id"] { display: none !important; }
     .ck-static-logo { display: inline-flex; align-items: center; flex-shrink: 0; gap: 10px; text-decoration: none; }
-    .ck-static-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; background: rgb(var(--ck-primary)); color: rgb(var(--ck-primary-foreground)); }
+    .ck-static-mark { width: 36px; height: 36px; display: block; flex: 0 0 36px; border-radius: 8px; object-fit: contain; }
     .ck-static-wordmark { font-size: 20px; font-weight: 700; letter-spacing: -.025em; }
     .ck-static-wordmark b { color: rgb(var(--ck-primary)); }
     .ck-static-academy { margin-left: 8px; padding: 2px 6px; border: 1px solid rgb(var(--ck-border)); border-radius: 4px; font: 9px "JetBrains Mono", ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--ck-text-secondary)); }
@@ -138,7 +137,7 @@ html[data-reduced-motion="true"] .ck-error .ck-error-action { transition: none; 
 <body class="ck-error">
   <a href="#error-content" class="ck-static-skip"><span data-language="id" lang="id">Lewati ke konten</span><span data-language="en" lang="en">Skip to content</span></a>
   <header class="ck-error-header">
-    <a class="ck-static-logo" href="/" aria-label="Beranda CodeKita" data-label-id="Beranda CodeKita" data-label-en="CodeKita home"><span class="ck-static-mark"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal" aria-hidden="true"><path d="M12 19h8"></path><path d="m4 17 6-6-6-6"></path></svg></span><span class="ck-static-wordmark">code<b>kita</b><span class="ck-static-academy">academy</span></span></a>
+    <a class="ck-static-logo" href="/" aria-label="Beranda CodeKita" data-label-id="Beranda CodeKita" data-label-en="CodeKita home"><img class="ck-static-mark" src="/favicon.jpg" alt=""><span class="ck-static-wordmark">code<b>kita</b><span class="ck-static-academy">academy</span></span></a>
     <label class="ck-static-language" id="error-language-control" hidden><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"></path><path d="m4 14 6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="m22 22-5-10-5 10"></path><path d="M14 18h6"></path></svg><select id="error-language" aria-label="Bahasa" data-label-id="Bahasa" data-label-en="Language"><option value="id">ID — Indonesia</option><option value="en">EN — English</option></select></label>
   </header>
   <main id="error-content" class="ck-error-main" aria-labelledby="error-heading" tabindex="-1">

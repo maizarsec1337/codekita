@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { isStaticFrontend } from "@/lib/mode";
+import { Logo } from "@/components/academy/shared";
 import {
   Button,
   Card,
@@ -42,12 +43,11 @@ export function RegisterPage() {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<RegisterForm>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: RegisterForm) => {
-    if (isStaticFrontend) { reset(); setServerError("Demo only: input validated, but no account was created and nothing was saved."); return; }
+    if (isStaticFrontend) { setServerError(t("backendUnavailable")); return; }
     setServerError("");
     const result = await authRegister(
       data.email,
@@ -73,9 +73,10 @@ export function RegisterPage() {
     <div className="flex min-h-[calc(100vh-160px)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
+          <div className="mb-4 flex justify-center"><Logo /></div>
           <CardTitle className="text-2xl">{t("Create an account")}</CardTitle>
           <CardDescription>
-            {isStaticFrontend ? t("Demo only — use fictional inputs. No account is created.") : t("Join CodeKita to track your learning progress")}
+            {isStaticFrontend ? t("backendUnavailable") : t("Join CodeKita to track your learning progress")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,9 +85,9 @@ export function RegisterPage() {
               {isStaticFrontend ? t(serverError) : serverError}
             </div>
           )}
-          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/dashboard">{t("Explore demo dashboard")}</Link></Button>}
+          {isStaticFrontend && <Button asChild className="mb-4 w-full"><Link to="/paths">{t("browseCurriculum")}</Link></Button>}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <fieldset className="space-y-4">
+            <fieldset className="space-y-4" disabled={isStaticFrontend || isLoading}>
             <div className="space-y-2">
               <Label htmlFor="email">{t("Email address")}</Label>
               <Input
@@ -135,7 +136,7 @@ export function RegisterPage() {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isStaticFrontend ? t("Validate demo form") : t("Create account")}
+              {isStaticFrontend ? t("serviceUnavailable") : t("Create account")}
             </Button>
             </fieldset>
           </form>

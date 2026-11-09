@@ -3,9 +3,13 @@ import { ArrowRight, BookOpen, CheckCircle2, LockKeyhole } from 'lucide-react';
 import { useLearning } from '@/hooks/useAcademy';
 import { CardSkeletons, DataState, PageHeading, PathCard } from '@/components/academy/shared';
 import { Button } from '@/components/ui/button';
+import { isStaticFrontend } from '@/lib/mode';
+import { useTranslation } from 'react-i18next';
 export function LearningLibraryPage() {
+  const { t } = useTranslation('common');
   const learning = useLearning();
   const modules = useLocation().pathname.endsWith('modules');
+  if (isStaticFrontend) return <><PageHeading eyebrow={t('personalDataUnavailable')} title={modules ? 'Modules' : 'My learning'} description={t('backendRequired')} /><DataState title={t('personalDataUnavailable')} description={t('backendRequired')} /></>;
   if (learning.isPending) return <CardSkeletons />;
   if (learning.isError)
     return (
@@ -56,7 +60,9 @@ export function LearningLibraryPage() {
   );
 }
 export function AchievementsPage() {
+  const { t } = useTranslation('common');
   const learning = useLearning();
+  if (isStaticFrontend) return <><PageHeading eyebrow={t('personalDataUnavailable')} title="Achievements" description={t('backendRequired')} /><DataState title={t('personalDataUnavailable')} description={t('backendRequired')} /></>;
   if (learning.isPending) return <CardSkeletons />;
   if (learning.isError)
     return (

@@ -1,4 +1,9 @@
-# Error-fix verification — November 7, 2026
+# Historical error-fix verification — November 7, 2026
+
+The commands and test results in this dated report describe the repository at
+that time. The unit-test suite and browser-smoke harness were subsequently
+removed; those historical test commands are no longer available and are not
+current validation instructions.
 
 ## Scope
 
@@ -18,11 +23,11 @@ structured error-log handling.
 | `npm run typecheck` | Passed: frontend and server TypeScript |
 | `npm run lint` | Passed: zero errors/warnings; initial run reported 315 problems |
 | `npm run lint:frontend` | Passed |
-| `npm test -- --reporter=dot` | Passed: 113 tests across 21 files |
+| `npm test -- --reporter=dot` | Historical: passed 113 tests across 21 files; test runner subsequently removed |
 | `npm run build:static` | Passed; previous CommonJS/config and large-chunk warnings removed |
 | `git diff --check` | Passed; Git still prints Windows line-ending notices |
-| `node scripts/static-browser-smoke.mjs --preview` | Passed against the final static build |
-| `node scripts/static-browser-smoke.mjs` | Blocked by an existing process on port 5173; process left untouched |
+| `node scripts/static-browser-smoke.mjs --preview` | Historical: passed against the final static build; harness subsequently removed |
+| `node scripts/static-browser-smoke.mjs` | Historical: blocked by an existing process on port 5173; harness subsequently removed |
 
 The production-preview browser check covers 18 routes at 390, 768, and 1440px.
 It additionally tests language switching on dashboard, login, and settings at
