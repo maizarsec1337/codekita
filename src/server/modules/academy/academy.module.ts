@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AcademyController } from "./academy.controller";
 import { AcademyService } from "./academy.service";
-@Module({ controllers: [AcademyController], providers: [AcademyService] })
+import { ManagementController } from "./management.controller";
+import { ManagementService } from "./management.service";
+@Module({ controllers: [AcademyController, ManagementController], providers: [AcademyService, ManagementService] })
 export class AcademyModule {}

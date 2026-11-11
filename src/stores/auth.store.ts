@@ -4,6 +4,8 @@ import type { SessionPayload } from "@codekita/shared";
 interface AuthState {
   user: SessionPayload | null;
   isLoading: boolean;
+  sessionError: string | null;
+  setSessionError: (error: string | null) => void;
   setUser: (user: SessionPayload | null) => void;
   setLoading: (loading: boolean) => void;
 }
@@ -11,6 +13,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
+  sessionError: null,
+  setSessionError: (sessionError) => set({ sessionError }),
   setUser: (user) => set({ user, isLoading: false }),
   setLoading: (loading) => set({ isLoading: loading }),
 }));

@@ -1,4 +1,8 @@
 import { envSchema, type Env } from "@codekita/shared";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { parseEnv } from "node:util";
+import { projectRoot } from "./project-root";
 
 /**
  * Validated application configuration.
@@ -7,7 +11,17 @@ import { envSchema, type Env } from "@codekita/shared";
  */
 
 export function configuration(): Env {
-  return validateEnvironment(process.env);
+  // Fastify needs trustProxy before Nest's ConfigModule loads the env files.
+  // Match ConfigModule's file order; explicit process variables take precedence.
+  const fileValues: Record<string, string> = {};
+  for (const file of [".env.local", ".env"]) {
+    const path = join(projectRoot, file);
+    if (existsSync(path)) {
+      const values = parseEnv(readFileSync(path, "utf8"));
+      for (const [key, value] of Object.entries(values)) if (value !== undefined) fileValues[key] ??= value;
+    }
+  }
+  return validateEnvironment({ ...fileValues, ...process.env });
 }
 
 export function validateEnvironment(input: Record<string, unknown>): Env {

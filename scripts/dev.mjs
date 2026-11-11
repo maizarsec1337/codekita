@@ -20,7 +20,7 @@ if (buildCode !== 0) process.exit(buildCode ?? 1);
 
 const children = [
   spawn(process.execPath, [join(root, ".server-build", "server.js")], options),
-  spawn(process.execPath, [join(root, "node_modules", "vite", "bin", "vite.js"), "--port", "5173"], options),
+  spawn(process.execPath, [join(root, "node_modules", "vite", "bin", "vite.js"), "--port", "5173", "--strictPort"], options),
 ];
 let stopping = false;
 function stop(code) {

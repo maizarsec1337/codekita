@@ -6,7 +6,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../../database/prisma.service";
-import { randomBytes } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import argon2 from "argon2";
 import type { RoleName, SessionPayload } from "@codekita/shared";
 
@@ -45,8 +46,10 @@ export class AuthService {
   }
 
   async validateSession(token: string): Promise<SessionPayload | null> {
-    const session = await this.prisma.session.findUnique({
-      where: { token },
+    if (!/^[a-f0-9]{48,64}$/.test(token)) return null;
+    const session = await this.prisma.session.findFirst({
+      // Existing raw-token sessions remain usable until their original expiry.
+      where: { token: { in: [this.sessionHash(token), token] } },
       include: {
         user: {
           include: {
@@ -91,7 +94,7 @@ export class AuthService {
 
     await this.prisma.session.create({
       data: {
-        token,
+        token: this.sessionHash(token),
         expiresAt: new Date(Date.now() + maxAge),
         userId,
         ipAddress,
@@ -103,18 +106,22 @@ export class AuthService {
   }
 
   async revokeSession(token: string): Promise<void> {
-    await this.prisma.session.deleteMany({ where: { token } }).catch(() => {});
+    await this.prisma.session.deleteMany({ where: { token: { in: [this.sessionHash(token), token] } } });
   }
 
   async revokeAllSessionsForUser(userId: string): Promise<void> {
-    await this.prisma.session.deleteMany({ where: { userId } }).catch(() => {});
+    await this.prisma.session.deleteMany({ where: { userId } });
+  }
+
+  private sessionHash(token: string) {
+    return createHmac("sha256", this.configService.getOrThrow<string>("SESSION_SECRET")).update(token).digest("hex");
   }
 
   async login(identifier: string, password: string, ipAddress?: string, userAgent?: string) {
-    // Support login with either email or username (both stored in email column)
-    const user = await this.prisma.user.findUnique({
-      where: { email: identifier.includes("@") ? identifier.toLowerCase() : identifier },
-    });
+    const normalized = identifier.trim().toLowerCase();
+    const include = { roles: { include: { role: true } } } as const;
+    const user = await this.prisma.user.findUnique({ where: { email: normalized }, include })
+      ?? await this.prisma.user.findUnique({ where: { username: normalized }, include });
 
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException("Invalid credentials");
@@ -137,7 +144,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        roles: [],
+        roles: user.roles.map((ur: { role: { name: string } }) => ur.role.name),
       },
     };
   }
@@ -150,12 +157,7 @@ export class AuthService {
 
     const passwordHash = await this.hashPassword(password);
 
-    const studentRole = await this.prisma.role.findUnique({
-      where: { name: "STUDENT" },
-    });
-    if (!studentRole) {
-      throw new Error("STUDENT role not seeded — run database setup first");
-    }
+    const studentRole = await this.prisma.role.upsert({ where: { name: "STUDENT" }, create: { name: "STUDENT" }, update: {} });
 
     const user = await this.prisma.user.create({
       data: {
@@ -163,10 +165,14 @@ export class AuthService {
         passwordHash,
         firstName,
         lastName,
+        profile: { create: { displayName: [firstName, lastName].filter(Boolean).join(" ") } },
         roles: {
           create: { role: { connect: { id: studentRole.id } } },
         },
       },
+    }).catch((error: unknown) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new BadRequestException("Email already registered");
+      throw error;
     });
 
     const token = await this.createSession(user.id);

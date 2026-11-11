@@ -20,7 +20,8 @@ const chromePath = [
 ].find(candidate => candidate && existsSync(candidate));
 assert.ok(chromePath, 'Set CHROME_PATH to a local Chrome/Chromium executable.');
 assert.equal(typeof WebSocket, 'function', 'Run these browser checks with Node 22+.');
-const { paths } = JSON.parse(readFileSync(join(root, 'dist/catalogue.json'), 'utf8'));
+// Isolated animation fixture only; production content always comes from NestJS.
+const paths = [{ id: 'motion-path', slug: 'motion-path', title: 'Motion fixture', description: 'Isolated animation test', academy: 'programming', difficulty: 'Beginner', estimatedMinutes: 60, skills: [], prerequisites: [], moduleCount: 1, lessonCount: 1, modules: [{ id: 'motion-module', slug: 'motion-module', title: 'Motion module', order: 0, lessons: [{ id: 'motion-lesson', slug: 'motion-lesson', title: 'Motion lesson', order: 0 }] }] }];
 const counts = [0, 1, 2, 4, 0, 3, 1];
 const dashboard = {
   xp: 50,
@@ -144,8 +145,8 @@ async function reduced(value) {
 try {
   server = await createServer({
     root,
-    mode: 'static',
-    define: { __CODEKITA_BACKEND_ENABLED__: 'true', __CODEKITA_API_BASE__: JSON.stringify('/api') },
+    mode: 'test',
+    define: { __CODEKITA_API_BASE__: JSON.stringify('/api') },
     server: { host: '127.0.0.1', port: 0, strictPort: false, open: false },
     plugins: [
       {

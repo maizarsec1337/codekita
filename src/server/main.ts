@@ -15,6 +15,7 @@ import { join } from "node:path";
 import type { Env } from "@codekita/shared";
 import { cookies, validCsrf } from "./common/security";
 import { projectRoot } from "./config/project-root";
+import { configuration } from "./config/configuration";
 
 // Use the plugin's Fastify types consistently: pnpm can install a different
 // Fastify minor alongside Nest's adapter than the direct application dependency.
@@ -24,7 +25,7 @@ type FrontendHandler = Parameters<PluginFastifyInstance["setNotFoundHandler"]>[1
 async function bootstrap() {
   const logger = new PinoLogger();
 
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ trustProxy: configuration().TRUST_PROXY || false }), {
     bufferLogs: true,
     logger,
   });
@@ -101,7 +102,7 @@ async function bootstrap() {
       const frontendFallback: FrontendHandler = (request, reply) => {
         const pathname = request.url.split("?")[0];
         const read = request.method === "GET" || request.method === "HEAD";
-        if (read && (pathname.startsWith("/assets/") || /^\/status\/(403|404|500|503)\.html$/.test(pathname) || ["/favicon.jpg", "/catalogue.json"].includes(pathname))) {
+        if (read && (pathname.startsWith("/assets/") || /^\/status\/(403|404|500|503)\.html$/.test(pathname) || pathname === "/favicon.jpg")) {
           return reply.sendFile(pathname.slice(1), publicDir);
         }
         if (read && /text\/html/i.test(request.headers.accept ?? "") && !/^\/(?:api|assets|status|runtime)(?:\/|$)/i.test(pathname) && !pathname.includes(".") && !pathname.startsWith("/src/")) {

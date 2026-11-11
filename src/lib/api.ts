@@ -4,7 +4,7 @@ import {
   apiErrorSchema,
   type CoursesResponse,
 } from "@codekita/shared";
-import { isStaticFrontend, apiBase } from "./mode";
+import { apiBase } from "./mode";
 
 const API_BASE = apiBase.replace(/\/+$/, "");
 
@@ -35,7 +35,6 @@ export async function request<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  if (isStaticFrontend) throw new ApiError(503, null, "The CodeKita backend is not configured. Account services are unavailable.");
   validateApiBase();
   const url = `${API_BASE}${path.startsWith("/") ? path : "/" + path}`;
   const headers = new Headers(init.headers);

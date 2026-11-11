@@ -13,13 +13,12 @@ export default defineConfig(({ mode, command, isPreview }) => {
     throw new Error("Only VITE_API_URL is permitted in the public build environment. Never prefix secrets with VITE_.");
   }
   const configuredApi = isProductionBuild ? productionApiUrl(env.VITE_API_URL) : env.VITE_API_URL?.trim();
-  const apiBase = configuredApi || (!isProductionBuild && mode !== "static" ? "/api" : "");
+   const apiBase = configuredApi ? (configuredApi.replace(/\/+$/, "").endsWith("/api") ? configuredApi.replace(/\/+$/, "") : `${configuredApi.replace(/\/+$/, "")}/api`) : "/api";
   return {
   base: "/",
   plugins: [react(), frontendRelease(projectRoot)],
   define: {
     __CODEKITA_API_BASE__: JSON.stringify(apiBase),
-    __CODEKITA_BACKEND_ENABLED__: JSON.stringify(Boolean(apiBase)),
   },
   resolve: {
     alias: {
@@ -48,7 +47,7 @@ export default defineConfig(({ mode, command, isPreview }) => {
   server: {
     port: 5173,
     strictPort: true,
-    proxy: mode === "static" ? undefined : {
+    proxy: {
       "/api": {
         target: `http://127.0.0.1:${process.env.PORT ?? loadEnv(mode, projectRoot, "").PORT ?? "3000"}`,
         changeOrigin: true,

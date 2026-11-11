@@ -103,6 +103,7 @@ export async function ensureLocalSessionSecret({ root, environment }) {
     if (envAssignment?.value) return { generated: false, filePath: envPath };
   }
 
+  if (environment.NODE_ENV === "production") throw new Error("SESSION_SECRET is required in production. Configure a stable secret; automatic generation is development-only.");
   const secret = randomBytes(48).toString("base64url");
   const updated = localAssignment
     ? replaceEmptyAssignment(localContent, localAssignment, secret)

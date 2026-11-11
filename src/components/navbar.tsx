@@ -51,7 +51,7 @@ export function Navbar() {
               aria-label={t('Checking session')}
             />
           ) : user ? (
-            <Link to="/dashboard" className="motion-link flex items-center gap-2 text-sm">
+            <Link to={user.roles.some(role => role === 'ADMIN' || role === 'SUPER_ADMIN') ? '/admin/dashboard' : '/dashboard'} className="motion-link flex items-center gap-2 text-sm">
               <span className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-semibold text-primary">
                 {user.email[0].toUpperCase()}
               </span>
@@ -95,7 +95,7 @@ export function Navbar() {
                 {[
                   ...links,
                   ...(user
-                    ? [['Dashboard', '/dashboard']]
+                    ? [['Dashboard', user.roles.some(role => role === 'ADMIN' || role === 'SUPER_ADMIN') ? '/admin/dashboard' : '/dashboard']]
                     : [
                         ['Log in', '/login'],
                         ['Create account', '/register'],

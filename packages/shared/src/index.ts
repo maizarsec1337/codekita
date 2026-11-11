@@ -38,5 +38,6 @@ export { parseHealthDto } from "./schemas/health";
 export { parseApiError, isApiError } from "./schemas/error";
 export { buildCoursesResponse, buildHealthDto } from "./utils/response";
 export * from "./academy";
+export * from "./platform";
 export { starterPaths } from "./starter-content";
 export { publicCatalogueSchema, type PublicCatalogue } from "./public-catalogue";

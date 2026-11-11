@@ -17,6 +17,7 @@ export const lessonInputSchema = z.object({
 export const pathInputSchema = z.object({
   title: z.string().min(3).max(200), slug, description: z.string().min(10).max(3000),
   academy: academySchema, difficulty: difficultySchema,
+  categoryId: z.string().uuid().nullable().optional(),
   estimatedMinutes: z.number().int().min(10).max(30000),
   skills: z.array(z.string().min(1).max(100)).max(30),
   prerequisites: z.array(slug).max(20), isPublished: z.boolean(),
@@ -38,10 +39,12 @@ export interface PathSummary {
   id: string; slug: string; title: string; description: string | null;
   academy: Academy; difficulty: string; estimatedMinutes: number;
   skills: string[]; prerequisites: string[]; moduleCount: number; lessonCount: number;
+  categoryId?: string | null;
 }
 export const pathSummarySchema = z.object({
   id: z.string().min(1), slug, title: z.string().min(1), description: z.string().nullable(),
   academy: academySchema, difficulty: z.string().min(1), estimatedMinutes: z.number().int().nonnegative(),
+  categoryId: z.string().uuid().nullable().optional(),
   skills: z.array(z.string()), prerequisites: z.array(z.string()), moduleCount: z.number().int().nonnegative(), lessonCount: z.number().int().nonnegative(),
 });
 export interface SectionSummary { id: string; slug: string; title: string; order: number }

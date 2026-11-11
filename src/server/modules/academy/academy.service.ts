@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { Prisma, type Course } from "@prisma/client";
-import { assessmentSchema, type Academy, type DashboardData, type PathInput, type PathSummary } from "@codekita/shared";
+import { assessmentSchema, type Academy, type DashboardData, type PathInput, type PathSummary, type SessionPayload } from "@codekita/shared";
 import { PrismaService } from "../../database/prisma.service";
 import { assertSequence, streaks } from "./progress";
 
@@ -9,7 +9,7 @@ type CourseTree = Prisma.CourseGetPayload<{ include: typeof structure }>;
 const sections = (course: CourseTree) => course.modules.flatMap((module) => module.lessons);
 const outline = (course: CourseTree) => course.modules.map((module) => ({ id: module.id, slug: module.slug ?? module.id, title: module.title, order: module.order, lessons: module.lessons.map((lesson) => ({ id: lesson.id, slug: lesson.slug ?? lesson.id, title: lesson.title, order: lesson.order })) }));
 function summary(course: CourseTree): PathSummary {
-  return { id: course.id, title: course.title, slug: course.slug, description: course.description, academy: course.academy as Academy, difficulty: course.difficulty, estimatedMinutes: course.estimatedMinutes, skills: course.skills, prerequisites: course.prerequisites, moduleCount: course.modules.length, lessonCount: sections(course).length };
+  return { id: course.id, title: course.title, slug: course.slug, description: course.description, categoryId: course.categoryId, academy: course.academy as Academy, difficulty: course.difficulty, estimatedMinutes: course.estimatedMinutes, skills: course.skills, prerequisites: course.prerequisites, moduleCount: course.modules.length, lessonCount: sections(course).length };
 }
 
 @Injectable()
@@ -83,14 +83,18 @@ export class AcademyService {
   async complete(userId: string, moduleSlug: string, sectionSlug: string, answer: number) {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        return await this.prisma.$transaction(async (db) => {
+        const result = await this.prisma.$transaction(async (db) => {
           const { course, lesson, enrollment } = await this.access(userId, moduleSlug, sectionSlug, db);
           const previous = enrollment.progress.find((item) => item.lessonId === lesson.id);
           const existingEvent = await db.xpEvent.findUnique({ where: { userId_eventKey: { userId, eventKey: `lesson:${lesson.id}` } } });
           if (previous?.completed && existingEvent) return { completed: true, xpAwarded: 0, alreadyCompleted: true };
           const assessment = assessmentSchema.safeParse(lesson.assessment);
           if (!assessment.success) throw new ConflictException("This lesson needs a configured assessment before completion can be validated.");
-          if (answer !== assessment.data.correctIndex) throw new BadRequestException("Not quite. Review the lesson and try the knowledge check again.");
+          if (answer >= assessment.data.options.length) throw new BadRequestException("Invalid answer option");
+          const quiz = await db.quiz.upsert({ where: { lessonId: lesson.id }, create: { lessonId: lesson.id, ...assessment.data }, update: {} });
+          const passed = answer === quiz.correctIndex;
+          await db.quizResult.create({ data: { quizId: quiz.id, userId, answer, passed } });
+          if (!passed) return { completed: false, xpAwarded: 0 };
           await db.learningProgress.upsert({ where: { enrollmentId_lessonId: { enrollmentId: enrollment.id, lessonId: lesson.id } }, create: { enrollmentId: enrollment.id, lessonId: lesson.id, completed: true, completedAt: new Date() }, update: { completed: true, completedAt: new Date() } });
           const event = await db.xpEvent.createMany({ data: [{ userId, eventKey: `lesson:${lesson.id}`, amount: 50 }], skipDuplicates: true });
           // Legacy "mark complete" records are preserved, but certificates require assessed events for every lesson.
@@ -99,7 +103,10 @@ export class AcademyService {
             await db.certificate.upsert({ where: { enrollmentId: enrollment.id }, create: { enrollmentId: enrollment.id, title: course.title }, update: {} });
           }
           return { completed: true, xpAwarded: event.count ? 50 : 0, alreadyCompleted: false };
-        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 30000 });
+        // Throw only after committing the unsuccessful attempt; never invent a result.
+        if (!result.completed) throw new BadRequestException("Not quite. Review the lesson and try the knowledge check again.");
+        return result;
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") continue;
         throw error;
@@ -143,13 +150,27 @@ export class AcademyService {
     return scores.map((score, index) => ({ rank: index + 1, name: `Engineer ${index + 1}`, xp: score._sum.amount ?? 0 }));
   }
 
-  async adminList() {
-    return this.prisma.course.findMany({ include: structure, orderBy: { updatedAt: "desc" } });
+  async adminList(actor: SessionPayload) {
+    return this.prisma.course.findMany({ where: this.isAdmin(actor) ? {} : { instructorId: actor.userId }, include: structure, orderBy: { updatedAt: "desc" } });
   }
 
-  async writePath(input: PathInput, id?: string) {
+  private isAdmin(actor: SessionPayload) { return actor.roles.some(role => role === "ADMIN" || role === "SUPER_ADMIN"); }
+
+  async archive(id: string, actor: SessionPayload) {
+    const course = await this.prisma.course.findUnique({ where: { id } });
+    if (!course) throw new NotFoundException("Path not found");
+    if (!this.isAdmin(actor) && course.instructorId !== actor.userId) throw new ForbiddenException("This path belongs to another instructor");
+    return this.prisma.course.update({ where: { id }, data: { isPublished: false } });
+  }
+
+  async writePath(input: PathInput, actor: SessionPayload, id?: string) {
     return this.prisma.$transaction(async (db) => {
-      if (id && !await db.course.findUnique({ where: { id } })) throw new NotFoundException("Path not found");
+      if (id) {
+        const existing = await db.course.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException("Path not found");
+        if (!this.isAdmin(actor) && existing.instructorId !== actor.userId) throw new ForbiddenException("This path belongs to another instructor");
+      }
+      if (input.categoryId && !await db.category.findFirst({ where: { id: input.categoryId, isActive: true } })) throw new BadRequestException("Choose an active category");
       for (const prerequisite of input.prerequisites) {
         const required = await db.course.findUnique({ where: { slug: prerequisite } });
         if (!required) throw new BadRequestException(`Unknown prerequisite: ${prerequisite}`);
@@ -173,7 +194,7 @@ export class AcademyService {
           for (const lesson of module.lessons) if (!incoming.lessons.some((item) => item.id === lesson.id && item.slug === (lesson.slug ?? lesson.id))) throw new BadRequestException("Existing sections must retain their IDs and slugs.");
         }
       }
-      const course = id ? await db.course.update({ where: { id }, data }) : await db.course.create({ data });
+      const course = id ? await db.course.update({ where: { id }, data }) : await db.course.create({ data: { ...data, instructorId: actor.userId } });
       for (const [order, module] of modules.entries()) {
         let saved;
         if (module.id) {
@@ -186,13 +207,17 @@ export class AcademyService {
           if (lesson.id) {
             const existing = await db.lesson.findFirst({ where: { id: lesson.id, moduleId: saved.id } });
             if (!existing) throw new BadRequestException("Section does not belong to this module");
-            if (JSON.stringify(existing.assessment) !== JSON.stringify(lesson.assessment) && await db.learningProgress.count({ where: { lessonId: lesson.id, completed: true } })) throw new ConflictException("An assessed lesson with completions cannot change its answer key. Create a new lesson version.");
+            if (JSON.stringify(existing.assessment) !== JSON.stringify(lesson.assessment) && (await db.learningProgress.count({ where: { lessonId: lesson.id, completed: true } }) || await db.quizResult.count({ where: { quiz: { lessonId: lesson.id } } }))) throw new ConflictException("An assessment with attempts cannot change. Create a new lesson version.");
             await db.lesson.update({ where: { id: lesson.id }, data: lessonData });
-          } else await db.lesson.create({ data: { ...lessonData, moduleId: saved.id } });
+            await db.quiz.upsert({ where: { lessonId: lesson.id }, create: { lessonId: lesson.id, ...lesson.assessment }, update: lesson.assessment });
+          } else {
+            const created = await db.lesson.create({ data: { ...lessonData, moduleId: saved.id } });
+            await db.quiz.create({ data: { lessonId: created.id, ...lesson.assessment } });
+          }
         }
       }
       return { id: course.id, slug: course.slug };
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 30000 });
   }
 }
 function isUuid(value: string) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value); }

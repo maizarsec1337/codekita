@@ -8,6 +8,7 @@ import { CoursesModule } from "./modules/courses/courses.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { AuthGuard } from "./common/guards/auth.guard";
 import { RolesGuard } from "./common/guards/roles.guard";
+import { PermissionsGuard } from "./common/guards/permissions.guard";
 import { AcademyModule } from "./modules/academy/academy.module";
 import { projectRoot } from "./config/project-root";
 import { join } from "node:path";
@@ -29,6 +30,7 @@ import { join } from "node:path";
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 })
 export class AppModule {}

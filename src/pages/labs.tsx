@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { labDefinitions } from '@codekita/shared';
+import type { LabDto } from '@codekita/shared';
+import { managementApi } from '@/lib/management-api';
+import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowDownToLine,
   CheckCircle2,
@@ -13,13 +16,14 @@ import {
   ShieldCheck,
   Terminal,
 } from 'lucide-react';
-import { academies, PageHeading } from '@/components/academy/shared';
+import { academies, CardSkeletons, DataState, PageHeading } from '@/components/academy/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 export function LabsPage() {
   const [params, setParams] = useSearchParams();
   const category = params.get('academy') ?? 'programming';
-  const lab = labDefinitions.find(item => item.academy === category) ?? labDefinitions[0];
+  const query = useQuery({ queryKey: ['labs'], queryFn: managementApi.labs });
+  const lab = query.data?.labs.find(item => item.academy === category);
   return (
     <div className="page-container py-12">
       <PageHeading
@@ -32,10 +36,10 @@ export function LabsPage() {
           <button
             key={key}
             onClick={() => setParams({ academy: key })}
-            aria-pressed={lab.academy === key}
+            aria-pressed={category === key}
             className={cn(
               'flex items-center gap-2 rounded-lg border px-4 py-3 text-xs',
-              lab.academy === key
+              category === key
                 ? 'border-primary/40 bg-primary/10 text-primary'
                 : 'border-border bg-card text-muted-foreground'
             )}
@@ -45,14 +49,21 @@ export function LabsPage() {
           </button>
         ))}
       </div>
-      <LabWorkspace key={lab.id} lab={lab} />
+      {query.isPending ? <CardSkeletons /> : query.isError ? <DataState error title="Labs unavailable" description={query.error.message} retry={() => void query.refetch()} /> : lab ? <LabWorkspace key={lab.id} lab={lab} /> : <DataState title="No labs published" description="An instructor has not published labs in this academy yet." />}
     </div>
   );
 }
-function LabWorkspace({ lab }: { lab: (typeof labDefinitions)[number] }) {
+function LabWorkspace({ lab }: { lab: LabDto }) {
+  const { user } = useAuth();
+  const draft = useQuery({ queryKey: ['lab-draft', user?.userId, lab.id], queryFn: () => managementApi.labDraft(lab.id), enabled: !!user });
+  const [dirty, setDirty] = useState(false);
   const [code, setCode] = useState(lab.starter),
     [language, setLanguage] = useState(lab.language),
     [message, setMessage] = useState('');
+  useEffect(() => {
+    if (!dirty && draft.data) { setCode(draft.data.code); setLanguage(draft.data.language); }
+  }, [draft.data, dirty]);
+  const save = useMutation({ mutationFn: () => managementApi.saveLabDraft(lab.id, code, language), onSuccess: async () => { setMessage('Draft saved to your account.'); await draft.refetch(); setDirty(false); } });
   const download = () => {
     const url = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
     const link = document.createElement('a');
@@ -126,7 +137,7 @@ function LabWorkspace({ lab }: { lab: (typeof labDefinitions)[number] }) {
               aria-label="Editor language"
               className="field w-auto py-1.5 text-xs"
               value={language}
-              onChange={event => setLanguage(event.target.value)}
+              onChange={event => { setLanguage(event.target.value); setDirty(true); }}
             >
               <option value={lab.language}>{lab.language}</option>
               {lab.language !== 'text' && <option value="text">plain text</option>}
@@ -138,13 +149,14 @@ function LabWorkspace({ lab }: { lab: (typeof labDefinitions)[number] }) {
           <textarea
             id="lab-code"
             value={code}
-            onChange={event => setCode(event.target.value)}
+            onChange={event => { setCode(event.target.value); setDirty(true); }}
             spellCheck={false}
             autoCapitalize="off"
             autoComplete="off"
             className="block min-h-[360px] w-full resize-y bg-background/60 p-5 font-mono text-xs leading-7 text-foreground outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30 sm:min-h-[400px]"
           />
           <div className="flex flex-wrap items-center gap-2 border-y border-border p-3">
+            <Button size="sm" disabled={!user || save.isPending || draft.isPending || draft.isError} onClick={() => save.mutate()}>Save draft</Button>
             <Button size="sm" disabled title="An isolated runner is not configured">
               <Play size={13} className="mr-2" />
               Run code
@@ -163,6 +175,7 @@ function LabWorkspace({ lab }: { lab: (typeof labDefinitions)[number] }) {
               aria-label="Reset draft to starter"
               onClick={() => {
                 setCode(lab.starter);
+                setDirty(true);
                 setMessage('Draft reset to starter content.');
               }}
             >
@@ -174,7 +187,7 @@ function LabWorkspace({ lab }: { lab: (typeof labDefinitions)[number] }) {
               {lab.academy === 'ai' ? 'Experiment output' : 'Results'}
             </h3>
             <p className="text-xs leading-6 text-muted-foreground" role="status">
-              {message ||
+              {save.error?.message || draft.error?.message || message ||
                 'No execution has taken place. Test results will appear only when an isolated execution and assessment service is integrated.'}
             </p>
           </div>

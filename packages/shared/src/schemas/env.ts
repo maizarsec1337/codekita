@@ -45,7 +45,7 @@ export const envSchema = z.object({
   DIRECT_URL: postgresUrl("DIRECT_URL").optional(),
   SESSION_SECRET: z.string().min(16, "SESSION_SECRET must be at least 16 characters"),
   SESSION_MAX_AGE: z.coerce.number().positive().default(86400000),
-  SESSION_NAME: z.string().default("codekita_session"),
+  SESSION_NAME: z.string().regex(/^[A-Za-z0-9_-]+$/).default("codekita_session"),
   COOKIE_SECURE: boolean(false),
   COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).default("lax"),
   CORS_ORIGIN: z.string().url().refine(value => {
@@ -54,7 +54,8 @@ export const envSchema = z.object({
       return ["https:", "http:"].includes(url.protocol) && value === url.origin;
     } catch { return false; }
   }, "CORS_ORIGIN must be one exact browser origin without a trailing slash or path").default("http://localhost:5173"),
-  ENABLE_SWAGGER: boolean(true),
+  ENABLE_SWAGGER: boolean(false),
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   OIDC_ISSUER_URL: z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional()),
   OIDC_CLIENT_ID: z.string().optional(),
   OIDC_CLIENT_SECRET: z.string().optional(),

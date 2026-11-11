@@ -13,6 +13,7 @@ model Role {
   name        String   @unique
   description String?
   users       UserRole[]
+  permissions RolePermission[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -20,6 +21,7 @@ model Role {
 model User {
   id           String      @id @default(uuid()) @db.Uuid
   email        String      @unique
+  username     String?     @unique
   passwordHash String?
   firstName    String?
   lastName     String?
@@ -29,6 +31,10 @@ model User {
   sessions     Session[]
   enrollments  Enrollment[]
   xpEvents     XpEvent[]
+  profile      Profile?
+  courses      Course[] @relation("InstructorCourses")
+  quizResults  QuizResult[]
+  labDrafts    LabDraft[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
@@ -65,6 +71,10 @@ model Course {
   estimatedMinutes Int      @default(60)
   skills      String[]      @default([])
   prerequisites String[]    @default([])
+  categoryId  String?       @db.Uuid
+  category    Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  instructorId String?      @db.Uuid
+  instructor  User?         @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: SetNull)
   modules     CourseModule[]
   enrollments Enrollment[]
   createdAt   DateTime      @default(now())
@@ -97,6 +107,7 @@ model Lesson {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   progress    LearningProgress[]
+  quiz        Quiz?
   @@unique([moduleId, slug])
 }
 
@@ -143,4 +154,92 @@ model Certificate {
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   title        String
   issuedAt     DateTime @default(now())
+}
+
+model Profile {
+  userId      String @id @db.Uuid
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String @default("")
+  bio         String @default("")
+  avatarUrl   String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Permission {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String @unique
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+  role         Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  @@id([roleId, permissionId])
+}
+
+model Category {
+  id          String @id @default(uuid()) @db.Uuid
+  slug        String @unique
+  name        String
+  description String @default("")
+  isActive    Boolean @default(true)
+  courses     Course[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quiz {
+  id           String @id @default(uuid()) @db.Uuid
+  lessonId     String @unique @db.Uuid
+  lesson       Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question     String
+  options      String[]
+  correctIndex Int
+  results      QuizResult[]
+  updatedAt    DateTime @updatedAt
+}
+
+model QuizResult {
+  id         String @id @default(uuid()) @db.Uuid
+  quizId     String @db.Uuid
+  quiz       Quiz @relation(fields: [quizId], references: [id], onDelete: Restrict)
+  userId     String @db.Uuid
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answer     Int
+  passed     Boolean
+  createdAt  DateTime @default(now())
+  @@index([userId, createdAt])
+}
+
+model Lab {
+  id          String @id
+  academy     String
+  title       String
+  language    String
+  duration    String
+  description String
+  starter     String
+  sample      String
+  objectives  String[]
+  hint        String
+  isPublished Boolean @default(false)
+  drafts      LabDraft[]
+}
+
+model LabDraft {
+  userId    String @db.Uuid
+  labId     String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lab       Lab @relation(fields: [labId], references: [id], onDelete: Cascade)
+  code      String
+  language  String
+  updatedAt DateTime @updatedAt
+  @@id([userId, labId])
+}
+
+model CurriculumTemplate {
+  slug    String @id
+  content Json
 }

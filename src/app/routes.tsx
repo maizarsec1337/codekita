@@ -25,12 +25,13 @@ export const appRoutes: RouteObject[] = [
           { path: "login", lazy: async () => ({ Component: (await import("@/pages/login")).LoginPage }) },
           { path: "register", lazy: async () => ({ Component: (await import("@/pages/register")).RegisterPage }) },
           {
-            path: "admin-dashboard",
+            path: "admin/dashboard",
             lazy: async () => {
               const { AdminDashboardPage } = await import("@/pages/admin-dashboard");
               return { Component: () => <AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute> };
             },
           },
+          { path: "admin-dashboard", element: <Navigate to="/admin/dashboard" replace /> },
         ],
       },
       {
