@@ -77,7 +77,7 @@ export const envSchema = z.object({
     } catch { return false; }
   }, "CORS_ORIGIN must be one exact browser origin without a trailing slash or path").default("http://localhost:5173"),
   ENABLE_SWAGGER: boolean(false),
-  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
+  TRUST_PROXY: z.coerce.number().int().min(0).max(1).default(0),
   OIDC_ISSUER_URL: z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional()),
   OIDC_CLIENT_ID: z.string().optional(),
   OIDC_CLIENT_SECRET: z.string().optional(),
@@ -106,6 +106,9 @@ export const envSchema = z.object({
     context.addIssue({ code: "custom", path: ["SUPABASE_URL"], message: "Required when configuring Supabase API keys" });
   }
   if (value.NODE_ENV === "production") {
+    if (value.SESSION_SECRET.length < 32) {
+      context.addIssue({ code: "custom", path: ["SESSION_SECRET"], message: "Production requires at least 32 characters" });
+    }
     for (const field of ["R2_ENDPOINT", "SUPABASE_URL", "SUPABASE_JWKS_URL"] as const) {
       if (value[field] && !value[field].startsWith("https://")) {
         context.addIssue({ code: "custom", path: [field], message: "Production integration endpoints require HTTPS" });

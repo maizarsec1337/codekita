@@ -7,7 +7,7 @@ import { IsPublic } from "../../common/decorators/is-public.decorator";
 import { cookies, csrfToken } from "../../common/security";
 import type { SessionPayload } from "@codekita/shared";
 
-const credentials = z.object({ email: z.string().trim().min(1).max(254), password: z.string().min(8).max(256) });
+const credentials = z.object({ email: z.string().trim().min(1).max(254), password: z.string().min(8).max(256) }).strict();
 const registration = credentials.extend({ email: z.string().trim().email().max(254), firstName: z.string().trim().max(100).optional(), lastName: z.string().trim().max(100).optional() });
 
 @Controller("auth")
@@ -46,6 +46,8 @@ export class AuthController {
     const input = credentials.safeParse(body);
     if (!input.success) throw new BadRequestException("Enter valid credentials");
     const result = await this.auth.login(input.data.email, input.data.password, request.ip, request.headers["user-agent"]);
+    const previous = cookies(request.headers.cookie)[this.config.get<string>("SESSION_NAME", "codekita_session")];
+    if (previous && previous !== result.token) await this.auth.revokeSession(previous);
     return this.authenticated(result.token, reply);
   }
 

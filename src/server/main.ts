@@ -26,7 +26,12 @@ type FrontendHandler = Parameters<PluginFastifyInstance["setNotFoundHandler"]>[1
 async function bootstrap() {
   const logger = new PinoLogger();
 
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ trustProxy: configuration().TRUST_PROXY || false }), {
+  const proxyEnabled = configuration().TRUST_PROXY === 1;
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({
+    // Trust only the loopback reverse proxy, never a caller-selected hop count.
+    trustProxy: proxyEnabled ? (address: string, hop: number) => hop === 0 && ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(address) : false,
+    bodyLimit: 1048576,
+  }), {
     bufferLogs: true,
     logger,
   });
@@ -50,11 +55,31 @@ async function bootstrap() {
     }
   });
 
+  // Zod 3 may allocate one issue per invalid array member before enforcing
+  // collection limits. Reject oversized JSON collections before schema parsing.
+  fastify.addHook("preValidation", async (request, reply) => {
+    const pending: unknown[] = [request.body];
+    let seen = 0;
+    while (pending.length) {
+      const value = pending.pop();
+      if (++seen > 20000) return reply.code(413).send({ statusCode: 413, error: "Payload Too Large", message: "Request structure is too large" });
+      if (Array.isArray(value)) {
+        if (value.length > 100) return reply.code(413).send({ statusCode: 413, error: "Payload Too Large", message: "Request collection is too large" });
+        pending.push(...value);
+      } else if (value && typeof value === "object") {
+        const entries = Object.values(value);
+        if (entries.length > 100) return reply.code(413).send({ statusCode: 413, error: "Payload Too Large", message: "Request object is too large" });
+        pending.push(...entries);
+      }
+    }
+  });
+
   // Security headers (Fastify Helmet)
   await fastify.register(fastifyHelmet, {
     contentSecurityPolicy: false,
     hidePoweredBy: true,
-    hsts: nodeEnv === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
+    // HSTS is an edge decision after HTTPS and subdomains have been verified.
+    hsts: false,
   });
 
   // Limit API requests without counting static assets and client-side routes.

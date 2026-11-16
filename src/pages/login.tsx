@@ -31,7 +31,7 @@ export function LoginPage() {
                 from?: string;
             } | null)?.from;
             const isAdmin = result.user.roles.some(role => role === "ADMIN" || role === "SUPER_ADMIN");
-            const destination = from?.startsWith("/") && !from.startsWith("//") && !from.startsWith("/admin") ? from : undefined;
+            const destination = typeof from === "string" && /^\/(?![\\/])/.test(from) && !from.includes("\\") && !Array.from(from).some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) && !from.toLowerCase().startsWith("/admin") ? from : undefined;
             navigate(result.user.mustChangePassword ? "/change-password" : isAdmin ? "/admin/dashboard" : destination ?? "/dashboard", { replace: true });
         }
         else {

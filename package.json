@@ -58,7 +58,7 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-fastify": "^11.0.0",
+    "@nestjs/platform-fastify": "^11.2.10",
     "@nestjs/swagger": "^11.3.2",
     "@prisma/client": "^6.5.0",
     "@radix-ui/react-dialog": "^1.1.6",

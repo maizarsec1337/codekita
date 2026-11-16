@@ -1,4 +1,4 @@
-import { Controller, Get, Query, ServiceUnavailableException } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Query, ServiceUnavailableException } from "@nestjs/common";
 import { CoursesService } from "./courses.service";
 import { IsPublic } from "../../common/decorators/is-public.decorator";
 import {
@@ -19,9 +19,10 @@ export class CoursesController {
   @Get()
   @IsPublic()
   async findAll(@Query() query: unknown) {
-    const parsed = courseQuerySchema.parse(query);
+    const parsed = courseQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException("Invalid pagination parameters");
     try {
-      const result = await this.coursesService.findAll(parsed.page, parsed.limit);
+      const result = await this.coursesService.findAll(parsed.data.page, parsed.data.limit);
       return parseCoursesResponse(result);
     } catch {
       throw new ServiceUnavailableException("Courses service unavailable");

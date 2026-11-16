@@ -12,6 +12,8 @@ import argon2 from "argon2";
 import type { RoleName, SessionPayload } from "@codekita/shared";
 
 const CSRF_TOKEN_BYTES = 24;
+// Fixed non-secret verifier keeps unknown/passwordless accounts on the Argon2 path.
+const DUMMY_PASSWORD_HASH = "$argon2id$v=19$m=65536,t=3,p=4$Ts8QTakpEGTqlPH6Ji6dog$up2SwRd0Apf5fClhd/5xsck/a5P8MgCEdojZ08rlmCA";
 
 /**
  * Authentication service.
@@ -124,20 +126,10 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email: normalized }, include })
       ?? await this.prisma.user.findUnique({ where: { username: normalized }, include });
 
-    if (!user || !user.passwordHash) {
+    const validPassword = await this.verifyPassword(user?.passwordHash ?? DUMMY_PASSWORD_HASH, password);
+    if (!user || !user.passwordHash || !validPassword || !user.isActive ||
+        (user.developmentBootstrap && this.configService.get("NODE_ENV") === "production")) {
       throw new UnauthorizedException("Invalid credentials");
-    }
-
-    if (user.developmentBootstrap && this.configService.get("NODE_ENV") === "production") {
-      throw new UnauthorizedException("Invalid credentials");
-    }
-
-    if (!(await this.verifyPassword(user.passwordHash, password))) {
-      throw new UnauthorizedException("Invalid credentials");
-    }
-
-    if (!user.isActive) {
-      throw new ForbiddenException("Account is deactivated");
     }
 
     const token = await this.createSession(user.id, ipAddress, userAgent);

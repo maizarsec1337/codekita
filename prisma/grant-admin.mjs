@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { existsSync, readFileSync } from "node:fs";
 import { parseEnv } from "node:util";
 for (const file of [".env.local", ".env"]) if (existsSync(file)) {
@@ -11,10 +11,13 @@ const roleName = process.argv[3] ?? "ADMIN";
 if (!["ADMIN", "SUPER_ADMIN"].includes(roleName)) throw new Error("Unsupported provisioning role");
 const prisma = new PrismaClient();
 try {
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user?.isActive) throw new Error("An active registered account is required.");
-  const role = await prisma.role.upsert({ where: { name: roleName }, create: { name: roleName }, update: {} });
-  await prisma.userRole.upsert({ where: { userId_roleId: { userId: user.id, roleId: role.id } }, create: { userId: user.id, roleId: role.id }, update: {} });
-  console.log("Administrator role assigned. Sign in again to refresh the UI.");
+  await prisma.$transaction(async db => {
+    const user = await db.user.findUnique({ where: { email } });
+    if (!user?.isActive || user.developmentBootstrap || user.mustChangePassword || !user.passwordHash) throw new Error("An active account with a rotated password is required.");
+    const role = await db.role.upsert({ where: { name: roleName }, create: { name: roleName }, update: {} });
+    await db.userRole.upsert({ where: { userId_roleId: { userId: user.id, roleId: role.id } }, create: { userId: user.id, roleId: role.id }, update: {} });
+    await db.session.deleteMany({ where: { userId: user.id } });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  console.log("Administrator role assigned; previous sessions revoked. Sign in again.");
 } catch { console.error("Admin provisioning failed. Verify an active registered account, migrations and role seed. Credentials are not logged."); process.exitCode = 1; }
 finally { await prisma.$disconnect(); }
