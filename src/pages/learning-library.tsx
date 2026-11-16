@@ -3,6 +3,11 @@ import { ArrowRight, BookOpen, CheckCircle2, LockKeyhole } from 'lucide-react';
 import { useLearning } from '@/hooks/useAcademy';
 import { CardSkeletons, DataState, PageHeading, PathCard } from '@/components/academy/shared';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { managementApi } from '@/lib/management-api';
+import { useAuth } from '@/hooks/useAuth';
 export function LearningLibraryPage() {
     const learning = useLearning();
     const modules = useLocation().pathname.endsWith('modules');
@@ -27,7 +32,15 @@ export function LearningLibraryPage() {
             prerequisite sections on the server.
           </p>
         </div>)}
+      {!modules && <LearningHistory />}
     </>);
+}
+function LearningHistory() {
+    const { t, i18n } = useTranslation('dashboard');
+    const { user } = useAuth();
+    const [page, setPage] = useState(1);
+    const history = useQuery({ queryKey: ['learning-history', user?.userId, page], queryFn: () => managementApi.history(page), enabled: !!user });
+    return <section className="panel mt-6 p-6"><h2 className="mb-4 text-xl">{t('learningHistory')}</h2>{history.isPending ? <p role="status">{t('loading')}</p> : history.isError ? <DataState error title={t('unavailable')} description={history.error.message} retry={() => void history.refetch()} /> : <>{history.data.items.length ? <ul className="space-y-3">{history.data.items.map(item => <li className="border-b border-border pb-3 text-sm" key={item.id}>{item.lesson.title} · {item.enrollment.course.title}<span className="muted ml-3">{new Date(item.completedAt).toLocaleDateString(i18n.language)}</span></li>)}</ul> : <p className="muted">{t('noResults')}</p>}<div className="mt-5 flex justify-between"><Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>{t('previous')}</Button><span>{t('pageCount', { page, total: history.data.total })}</span><Button variant="outline" disabled={page * 25 >= history.data.total} onClick={() => setPage(page + 1)}>{t('next')}</Button></div></>}</section>;
 }
 export function AchievementsPage() {
     const learning = useLearning();

@@ -14,6 +14,7 @@ export function AdminProtectedRoute({ children, }: {
     if (!user) {
         return <Navigate to="/login" replace state={{ from: "/admin/dashboard" }}/>;
     }
+    if (user.mustChangePassword) return <Navigate to="/change-password" replace/>;
     // Check if user has admin role
     const hasAdminRole = user.roles.some(role => ["ADMIN", "SUPER_ADMIN"].includes(role));
     if (!hasAdminRole) {

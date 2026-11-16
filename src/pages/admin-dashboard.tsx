@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { DataState, PageHeading } from '@/components/academy/shared';
 import { ManagementPanel } from '@/components/academy/management-panel';
 import { managementApi } from '@/lib/management-api';
+import { useTranslation } from 'react-i18next';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 const empty: PathInput = {
     title: '',
     slug: '',
@@ -40,7 +42,10 @@ const moduleTemplate = [
     },
 ];
 export function AdminDashboardPage() {
-    const paths = useQuery({ queryKey: ['admin-paths'], queryFn: academyApi.adminPaths });
+    const { t } = useTranslation('dashboard');
+    const [navigationOpen, setNavigationOpen] = useState(false);
+    const [pathPage, setPathPage] = useState(1), [pathSearch, setPathSearch] = useState(''), [pathStatus, setPathStatus] = useState('all');
+    const paths = useQuery({ queryKey: ['admin-paths', pathPage, pathSearch, pathStatus], queryFn: () => academyApi.adminPathPage(pathPage, pathSearch, pathStatus) });
     const templates = useQuery({ queryKey: ['admin-starter'], queryFn: academyApi.adminStarter });
     const categories = useQuery({ queryKey: ['admin-categories'], queryFn: managementApi.adminCategories });
     const client = useQueryClient();
@@ -101,13 +106,14 @@ export function AdminDashboardPage() {
                     .join(' · '));
                 return;
             }
-            write.mutate(parsed.data);
+            if (!selected || window.confirm(t('confirmCurriculum'))) write.mutate(parsed.data);
         }
         catch {
             setError('Modules must be valid JSON. Check commas, quotation marks, and brackets.');
         }
     };
-    return (<div className="page-container py-12">
+    const navigation = <nav aria-label={t('adminNav')} className="space-y-2">{[['admin-overview', 'overview'], ['admin-curriculum', 'curriculum'], ['admin-categories', 'categories'], ['admin-users', 'users'], ['admin-activity', 'activityMonitoring'], ['admin-certificates', 'certificateManagement'], ['admin-settings', 'platformSettings']].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => setNavigationOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">{t(label)}</a>)}<Link className="block px-3 py-2 text-sm text-primary" to="/dashboard">{t('studentWorkspace')}</Link></nav>;
+    return (<div className="page-container py-12"><div className="mb-4 lg:hidden"><Sheet open={navigationOpen} onOpenChange={setNavigationOpen}><SheetTrigger asChild><Button variant="outline">{t('openAdminNav')}</Button></SheetTrigger><SheetContent><SheetHeader><SheetTitle>{t('adminNav')}</SheetTitle><SheetDescription>{t('overview')}</SheetDescription></SheetHeader><div className="overflow-y-auto px-5">{navigation}</div></SheetContent></Sheet></div><div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]"><aside className="hidden lg:block"><div className="panel sticky top-4 p-4">{navigation}</div></aside><div className="min-w-0" id="admin-curriculum">
       <Link className="mb-7 inline-flex items-center gap-2 text-xs text-muted-foreground" to="/dashboard">
         <ArrowLeft size={13}/>
         Back to workspace
@@ -135,10 +141,11 @@ export function AdminDashboardPage() {
               <BookOpen size={16}/>
               Existing curriculum
             </h2>
-            {paths.isPending ? (<p className="muted">Loading paths…</p>) : paths.isError ? (<DataState error title="Content service unavailable" description={paths.error.message} retry={() => void paths.refetch()}/>) : !paths.data.length ? (<p className="muted">
+            <input className="field mb-3" aria-label={t('search')} placeholder={t('search')} value={pathSearch} maxLength={100} onChange={event => { setPathPage(1); setPathSearch(event.target.value); }}/><select className="field mb-3" aria-label={t('status')} value={pathStatus} onChange={event => { setPathPage(1); setPathStatus(event.target.value); }}><option value="all">{t('all')}</option><option value="published">{t('published')}</option><option value="draft">{t('draft')}</option></select>
+            {paths.isPending ? (<p className="muted">Loading paths…</p>) : paths.isError ? (<DataState error title="Content service unavailable" description={paths.error.message} retry={() => void paths.refetch()}/>) : !paths.data.items.length ? (<p className="muted">
                 No paths yet. Create your first curriculum or load an original starter below.
               </p>) : (<ul className="space-y-2">
-                {paths.data.map(path => (<li key={path.id}>
+                {paths.data.items.map(path => (<li key={path.id}>
                     <button className={`w-full rounded-lg border p-3 text-left ${selected?.id === path.id ? 'border-primary/40 bg-primary/5' : 'border-border hover:bg-accent'}`} onClick={() => edit(path)}>
                       <span className="block text-xs leading-6">{path.title}</span>
                       <span className="mt-1 block font-mono text-[9px] uppercase text-muted-foreground">
@@ -147,6 +154,7 @@ export function AdminDashboardPage() {
                     </button>
                   </li>))}
               </ul>)}
+            {paths.data && <div className="mt-4 flex justify-between gap-1"><Button size="sm" variant="outline" disabled={pathPage === 1} onClick={() => setPathPage(pathPage - 1)}>{t('previous')}</Button><Button size="sm" variant="outline" disabled={pathPage * 25 >= paths.data.total} onClick={() => setPathPage(pathPage + 1)}>{t('next')}</Button></div>}
           </div>
           <div className="panel p-4">
             <h2 className="mb-3 flex items-center gap-2 text-sm">
@@ -269,9 +277,9 @@ export function AdminDashboardPage() {
             <Save size={15} className="mr-2"/>
             {write.isPending ? 'Validating and saving…' : 'Save curriculum'}
           </Button>
-          {selected && <Button className="ml-3" variant="outline" type="button" disabled={archive.isPending} onClick={() => archive.mutate(selected.id)}>Archive path</Button>}
+          {selected && <Button className="ml-3" variant="outline" type="button" disabled={archive.isPending} onClick={() => { if (window.confirm(t('confirmArchivePath'))) archive.mutate(selected.id); }}>Archive path</Button>}
         </form>
       </div>
       <ManagementPanel />
-    </div>);
+    </div></div></div>);
 }

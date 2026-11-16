@@ -83,6 +83,19 @@ Prisma files, `node_modules` or `.server-build` to a public document root.
 
 ## Administrator provisioning
 
+For a **disposable local development database only**, after reviewing and applying
+the migrations and running `npm run db:seed`, set `NODE_ENV=development`, a local
+loopback `DATABASE_URL`, and privately supply `ADMIN_EMAIL` and `ADMIN_PASSWORD`;
+then run `npm run admin:bootstrap:dev`. To use the requested development credentials,
+enter the initial password supplied by the operator as `ADMIN_PASSWORD`; the
+username is `admin`. Do not commit the environment file or put the password in
+shell history. The script creates a SUPER_ADMIN only if no administrator exists;
+re-running it does not reset passwords or modify an existing account. It refuses
+remote databases and production mode. A development-bootstrap account cannot
+authenticate in production until it changes its password in development; its
+first session is restricted to password change, session inspection and logout.
+Use a separate disposable database, never a copy containing real user data.
+
 Register the real account normally, run the role seed, then an authorized operator
 runs `npm run admin:grant -- registered-email ADMIN`. Use `SUPER_ADMIN` explicitly
 only for the owner who should manage administrators. No account/password is seeded.
@@ -90,18 +103,8 @@ Instructors can edit only their own courses; only admins manage categories/users
 
 ## Verification
 
-`npm test` covers password hashing, CSRF, configuration validation and guards.
-The live API test creates random temporary records and cleans only their exact IDs:
-
-```powershell
-$env:CODEKITA_LIVE_TESTS='1'
-$env:CODEKITA_BROWSER_TESTS='1'
-npm run test:api
-```
-
-Use a disposable/staging database for repeated CI runs. The browser check uses an
-installed Chrome/Edge (`CHROME_PATH` override), submits the real React profile form,
-reads the saved value independently with Prisma, and reloads the page.
-No test fixtures are bundled in the application. Lab execution is intentionally
+Review the Prisma schema and migrations, run `npm run build`, and verify login,
+CSRF, authorization, and learning flows against a disposable staging database.
+Lab execution is intentionally
 unavailable until an isolated runner is configured; lab content and saved drafts
 are database-driven. The marketing code preview is an illustration, not learner data.

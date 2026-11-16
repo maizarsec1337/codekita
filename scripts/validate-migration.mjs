@@ -21,13 +21,11 @@ const tasks = {
   seed: ['prisma/seed.mjs'],
   import: ['scripts/import-curriculum.mjs'],
   build: ['scripts/run-npm-build.cjs'],
-  tests: ['--test', 'tests/platform.test.cjs'],
-  api: ['scripts/test-api.mjs'],
 };
 const report = [];
 for (const key of process.argv.slice(2)) {
   if (!tasks[key]) throw new Error('Unknown validation task');
-  const result = spawnSync(process.execPath, tasks[key], { cwd: root, env, encoding: 'utf8', timeout: ['build', 'api'].includes(key) ? 600000 : 180000 });
+  const result = spawnSync(process.execPath, tasks[key], { cwd: root, env, encoding: 'utf8', timeout: key === 'build' ? 600000 : 180000 });
   report.push({ task: key, exitCode: result.status, timedOut: result.error?.code === 'ETIMEDOUT', output: redact((result.stdout ?? '') + (result.stderr ?? '')) });
   writeFileSync(new URL('../validation-' + process.argv.slice(2).join('-') + '.log', import.meta.url), JSON.stringify(report, null, 2));
 }

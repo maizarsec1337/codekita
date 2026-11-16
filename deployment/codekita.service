@@ -1,0 +1,22 @@
+[Unit]
+Description=CodeKita API
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=codekita
+Group=codekita
+WorkingDirectory=/opt/codekita/current
+EnvironmentFile=/etc/codekita/codekita.env
+ExecStart=/usr/bin/node /opt/codekita/current/.server-build/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

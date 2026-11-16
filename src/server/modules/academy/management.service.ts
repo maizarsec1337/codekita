@@ -33,8 +33,16 @@ export class ManagementService {
     await this.prisma.user.update({ where: { id: userId }, data: { firstName, lastName, profile: { upsert: { create: profile, update: profile } } } });
     return this.profile(userId);
   }
-  async users(page: number) {
-    const where = {};
+  async history(userId: string, page: number) {
+    const where: Prisma.LearningProgressWhereInput = { enrollment: { userId }, completed: true, completedAt: { not: null } };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.learningProgress.findMany({ where, skip: (page - 1) * 25, take: 25, orderBy: [{ completedAt: "desc" }, { id: "asc" }], select: { id: true, completedAt: true, lesson: { select: { title: true } }, enrollment: { select: { course: { select: { title: true } } } } } }),
+      this.prisma.learningProgress.count({ where }),
+    ]);
+    return { items, total, page };
+  }
+  async users(page: number, search = "", status: "all" | "active" | "inactive" = "all") {
+    const where: Prisma.UserWhereInput = { ...(search ? { OR: [{ email: { contains: search, mode: "insensitive" } }, { username: { contains: search, mode: "insensitive" } }] } : {}), ...(status === "all" ? {} : { isActive: status === "active" }) };
     const [users, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({ where, skip: (page - 1) * 25, take: 25, orderBy: [{ createdAt: "desc" }, { id: "asc" }], select: { id: true, email: true, firstName: true, lastName: true, isActive: true, roles: { select: { role: { select: { name: true } } } } } }),
       this.prisma.user.count({ where }),
@@ -62,6 +70,33 @@ export class ManagementService {
       this.prisma.user.count(), this.prisma.course.count(), this.prisma.enrollment.count(), this.prisma.certificate.count(), this.prisma.quizResult.count(),
     ]);
     return { users, courses, enrollments, certificates, quizAttempts };
+  }
+  async certificates(page: number, search: string, status: "all" | "active" | "revoked") {
+    const where: Prisma.CertificateWhereInput = { ...(search ? { OR: [{ title: { contains: search, mode: "insensitive" } }, { enrollment: { user: { email: { contains: search, mode: "insensitive" } } } }] } : {}), ...(status === "all" ? {} : { revokedAt: status === "active" ? null : { not: null } }) };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.certificate.findMany({ where, skip: (page - 1) * 25, take: 25, orderBy: [{ issuedAt: "desc" }, { id: "asc" }], select: { id: true, title: true, issuedAt: true, revokedAt: true, enrollment: { select: { user: { select: { email: true } }, course: { select: { title: true } } } } } }),
+      this.prisma.certificate.count({ where }),
+    ]);
+    return { items, total, page };
+  }
+  async setCertificateRevoked(id: string, revoked: boolean) {
+    const result = await this.prisma.certificate.updateMany({ where: { id, revokedAt: revoked ? null : { not: null } }, data: { revokedAt: revoked ? new Date() : null } });
+    if (!result.count && !await this.prisma.certificate.findUnique({ where: { id }, select: { id: true } })) throw new NotFoundException("Certificate not found");
+    return { id, revoked };
+  }
+  async activity(page: number, search: string, status: "all" | "completed" | "started") {
+    const where: Prisma.EnrollmentWhereInput = { ...(search ? { OR: [{ user: { email: { contains: search, mode: "insensitive" } } }, { course: { title: { contains: search, mode: "insensitive" } } }] } : {}), ...(status === "all" ? {} : { certificate: status === "completed" ? { isNot: null } : { is: null } }) };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.enrollment.findMany({ where, skip: (page - 1) * 25, take: 25, orderBy: [{ enrolledAt: "desc" }, { id: "asc" }], select: { id: true, enrolledAt: true, certificate: { select: { issuedAt: true, revokedAt: true } }, user: { select: { email: true } }, course: { select: { title: true, modules: { select: { _count: { select: { lessons: true } } } } } }, _count: { select: { progress: { where: { completed: true } } } } } }),
+      this.prisma.enrollment.count({ where }),
+    ]);
+    return { items: items.map(item => ({ ...item, totalLessons: item.course.modules.reduce((total, module) => total + module._count.lessons, 0), completedLessons: item._count.progress })), total, page };
+  }
+  async settings() {
+    return await this.prisma.platformSetting.findUnique({ where: { id: "platform" }, select: { registrationEnabled: true } }) ?? { registrationEnabled: true };
+  }
+  async updateSettings(registrationEnabled: boolean) {
+    return this.prisma.platformSetting.upsert({ where: { id: "platform" }, create: { id: "platform", registrationEnabled }, update: { registrationEnabled }, select: { registrationEnabled: true } });
   }
   async templates() {
     return (await this.prisma.curriculumTemplate.findMany({ orderBy: { slug: "asc" } })).map(item => pathInputSchema.parse(item.content));

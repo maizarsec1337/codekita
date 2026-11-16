@@ -32,6 +32,8 @@ export function DashboardLayout() {
         return (<div role="status" className="m-10 h-64 animate-pulse rounded-2xl bg-card" aria-label={t('Checking session')}/>);
     if (!user)
         return <Navigate to="/login" replace state={{ from: location.pathname }}/>;
+    if (user.mustChangePassword)
+        return <Navigate to="/change-password" replace/>;
     const displayUser = user;
     const nav = (<>
       <nav aria-label={t('Student navigation')} className="space-y-1">
@@ -43,6 +45,9 @@ export function DashboardLayout() {
               {t(item.name)}
             </NavLink>))}
       </nav>
+      <div className="mt-5 space-y-1 border-t border-border pt-4">
+        {Object.entries({ programming: 'Programming', cybersecurity: 'Cybersecurity', ai: 'AI Engineering' }).map(([key, label]) => <Link key={key} to={`/paths?academy=${key}`} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground">{label}</Link>)}
+      </div>
       {displayUser?.roles.some(role => ['ADMIN', 'SUPER_ADMIN'].includes(role)) && (<Link className="mt-5 flex items-center gap-3 rounded-lg border border-border px-3 py-3 text-xs text-codekita-purple" to="/admin/dashboard">
             <ShieldCheck size={16}/>
             {t('Content administration')}

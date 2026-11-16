@@ -7,6 +7,28 @@ import { z } from "zod";
 
 const boolean = (fallback: boolean) => z.preprocess((value) => value === "false" ? false : value === "true" ? true : value, z.boolean().default(fallback));
 
+// Empty optional settings in .env.example must not enable an integration.
+// Preserve nonempty credentials exactly as supplied rather than trimming them.
+const optionalSetting = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(
+  (value) => typeof value === "string" && value.trim() === "" ? undefined : value,
+  schema.optional(),
+);
+
+const integrationUrl = (originOnly = false) => optionalSetting(z.string().url().refine(value => {
+  try {
+    const url = new URL(value);
+    const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    return (url.protocol === "https:" || (url.protocol === "http:" && loopback)) &&
+      !url.username && !url.password && !/[\s?#]/.test(value) &&
+      (!originOnly || url.pathname === "/");
+  } catch { return false; }
+}, "Use HTTPS without embedded credentials, queries or fragments; HTTP is local-development only"));
+
+const r2Credential = optionalSetting(z.string().min(1).refine(
+  value => !/\s/.test(value) && !/^your-r2-(?:access-key-id|secret-access-key)$/i.test(value),
+  "Use real R2 credentials or leave the integration unconfigured",
+));
+
 const postgresUrl = (field: "DATABASE_URL" | "DIRECT_URL") => z.string().url().superRefine((value, ctx) => {
   const invalid = (message: string) => ctx.addIssue({ code: z.ZodIssueCode.custom, message });
   let url: URL;
@@ -60,7 +82,36 @@ export const envSchema = z.object({
   OIDC_CLIENT_ID: z.string().optional(),
   OIDC_CLIENT_SECRET: z.string().optional(),
   OIDC_CALLBACK_URL: z.string().url().optional(),
+
+  // Optional server-only configuration; does not enable uploads by itself.
+  R2_ACCOUNT_ID: optionalSetting(z.string().regex(/^[a-f0-9]{32}$/i)),
+  R2_ENDPOINT: integrationUrl(true),
+  R2_ACCESS_KEY_ID: r2Credential,
+  R2_SECRET_ACCESS_KEY: r2Credential,
+  R2_BUCKET: optionalSetting(z.string().min(1).refine(value => !/\s/.test(value), "Bucket names cannot contain whitespace")),
+
+  // Prisma and the existing session authentication do not require these keys.
+  SUPABASE_URL: integrationUrl(true),
+  SUPABASE_PUBLISHABLE_KEY: optionalSetting(z.string().min(1)),
+  SUPABASE_SECRET_KEY: optionalSetting(z.string().min(1)),
+  SUPABASE_JWKS_URL: integrationUrl(),
 }).superRefine((value, context) => {
+  // Metadata alone is allowed while the operator obtains storage credentials.
+  if (value.R2_ACCESS_KEY_ID || value.R2_SECRET_ACCESS_KEY) {
+    for (const field of ["R2_ENDPOINT", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"] as const) {
+      if (!value[field]) context.addIssue({ code: "custom", path: [field], message: "Required when configuring R2 credentials" });
+    }
+  }
+  if ((value.SUPABASE_PUBLISHABLE_KEY || value.SUPABASE_SECRET_KEY) && !value.SUPABASE_URL) {
+    context.addIssue({ code: "custom", path: ["SUPABASE_URL"], message: "Required when configuring Supabase API keys" });
+  }
+  if (value.NODE_ENV === "production") {
+    for (const field of ["R2_ENDPOINT", "SUPABASE_URL", "SUPABASE_JWKS_URL"] as const) {
+      if (value[field] && !value[field].startsWith("https://")) {
+        context.addIssue({ code: "custom", path: [field], message: "Production integration endpoints require HTTPS" });
+      }
+    }
+  }
   if (value.NODE_ENV === "production" && !value.CORS_ORIGIN.startsWith("https://")) {
     context.addIssue({ code: "custom", path: ["CORS_ORIGIN"], message: "Production CORS requires an HTTPS frontend origin" });
   }

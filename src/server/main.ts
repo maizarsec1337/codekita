@@ -16,6 +16,7 @@ import type { Env } from "@codekita/shared";
 import { cookies, validCsrf } from "./common/security";
 import { projectRoot } from "./config/project-root";
 import { configuration } from "./config/configuration";
+import { installAuthenticationRateLimit } from "./common/authentication-rate-limit";
 
 // Use the plugin's Fastify types consistently: pnpm can install a different
 // Fastify minor alongside Nest's adapter than the direct application dependency.
@@ -62,6 +63,7 @@ async function bootstrap() {
     timeWindow: 60000,
     allowList: (request: { url: string }) => !request.url.split("?")[0].startsWith("/api/"),
   });
+  installAuthenticationRateLimit(fastify);
 
   // CORS — credentials enabled for session cookies from the frontend origin
   app.enableCors({ origin: corsOrigin, credentials: true });
@@ -122,7 +124,7 @@ async function bootstrap() {
   }
 
   await app.init();
-  await app.listen(port, "0.0.0.0");
+  await app.listen(port, nodeEnv === "production" ? "127.0.0.1" : "0.0.0.0");
 
   logger.log(`CodeKita backend listening on :${port} (${nodeEnv})`);
 

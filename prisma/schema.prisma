@@ -23,6 +23,8 @@ model User {
   email        String      @unique
   username     String?     @unique
   passwordHash String?
+  mustChangePassword Boolean @default(false)
+  developmentBootstrap Boolean @default(false)
   firstName    String?
   lastName     String?
   emailVerified Boolean    @default(false)
@@ -135,6 +137,7 @@ model LearningProgress {
   bookmarked   Boolean  @default(false)
   updatedAt    DateTime @updatedAt
   @@unique([enrollmentId, lessonId])
+  @@index([completedAt(sort: Desc), id])
 }
 
 model XpEvent {
@@ -154,6 +157,14 @@ model Certificate {
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   title        String
   issuedAt     DateTime @default(now())
+  revokedAt    DateTime?
+  @@index([issuedAt(sort: Desc), id])
+}
+
+model PlatformSetting {
+  id                  String @id
+  registrationEnabled Boolean @default(true)
+  updatedAt           DateTime @updatedAt
 }
 
 model Profile {

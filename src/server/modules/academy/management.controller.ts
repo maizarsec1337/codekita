@@ -17,13 +17,19 @@ export class ManagementController {
   @IsPublic() @Get("categories") categories() { return this.management.categories(); }
   @Get("profile") profile(@Req() req: UserRequest) { return this.management.profile(req.user.userId); }
   @Patch("profile") saveProfile(@Req() req: UserRequest, @Body() body: unknown) { return this.management.saveProfile(req.user.userId, parse(profileInputSchema, body)); }
+  @Get("learning/history") history(@Req() req: UserRequest, @Query("page") page = "1") { return this.management.history(req.user.userId, parse(z.coerce.number().int().min(1).max(100000), page)); }
   @Roles("ADMIN", "SUPER_ADMIN") @Get("admin/categories") adminCategories() { return this.management.categories(true); }
   @Roles("ADMIN", "SUPER_ADMIN") @Permissions("categories:write") @Post("admin/categories") create(@Body() body: unknown) { return this.management.writeCategory(parse(categoryInputSchema, body)); }
   @Roles("ADMIN", "SUPER_ADMIN") @Permissions("categories:write") @Patch("admin/categories/:id") update(@Param("id", new ParseUUIDPipe()) id: string, @Body() body: unknown) { return this.management.writeCategory(parse(categoryInputSchema, body), id); }
   @Roles("ADMIN", "SUPER_ADMIN") @Permissions("categories:write") @Delete("admin/categories/:id") archive(@Param("id", new ParseUUIDPipe()) id: string) { return this.management.archiveCategory(id); }
-  @Roles("ADMIN", "SUPER_ADMIN") @Permissions("users:write") @Get("admin/users") users(@Query("page") page = "1") { return this.management.users(parse(z.coerce.number().int().min(1).max(100000), page)); }
+  @Roles("ADMIN", "SUPER_ADMIN") @Permissions("users:write") @Get("admin/users") users(@Query("page") page = "1", @Query("search") search = "", @Query("status") status = "all") { return this.management.users(parse(z.coerce.number().int().min(1).max(100000), page), parse(z.string().trim().max(100), search), parse(z.enum(["all", "active", "inactive"]), status)); }
   @Roles("ADMIN", "SUPER_ADMIN") @Permissions("users:write") @Patch("admin/users/:id") user(@Req() req: UserRequest, @Param("id", new ParseUUIDPipe()) id: string, @Body() body: unknown) { return this.management.updateUser(req.user, id, parse(userUpdateSchema, body)); }
   @Roles("ADMIN", "SUPER_ADMIN") @Get("admin/statistics") statistics() { return this.management.statistics(); }
+  @Roles("ADMIN", "SUPER_ADMIN") @Permissions("users:write") @Get("admin/certificates") certificates(@Query("page") page = "1", @Query("search") search = "", @Query("status") status = "all") { return this.management.certificates(parse(z.coerce.number().int().min(1).max(100000), page), parse(z.string().trim().max(100), search), parse(z.enum(["all", "active", "revoked"]), status)); }
+  @Roles("SUPER_ADMIN") @Permissions("users:write") @Patch("admin/certificates/:id") certificate(@Param("id", new ParseUUIDPipe()) id: string, @Body() body: unknown) { return this.management.setCertificateRevoked(id, parse(z.object({ revoked: z.boolean() }).strict(), body).revoked); }
+  @Roles("ADMIN", "SUPER_ADMIN") @Permissions("users:write") @Get("admin/activity") activity(@Query("page") page = "1", @Query("search") search = "", @Query("status") status = "all") { return this.management.activity(parse(z.coerce.number().int().min(1).max(100000), page), parse(z.string().trim().max(100), search), parse(z.enum(["all", "completed", "started"]), status)); }
+  @Roles("SUPER_ADMIN") @Get("admin/settings") settings() { return this.management.settings(); }
+  @Roles("SUPER_ADMIN") @Patch("admin/settings") updateSettings(@Body() body: unknown) { return this.management.updateSettings(parse(z.object({ registrationEnabled: z.boolean() }).strict(), body).registrationEnabled); }
   @Get("labs/:id/draft") draft(@Req() req: UserRequest, @Param("id") id: string) { return this.management.labDraft(req.user.userId, id); }
   @Patch("labs/:id/draft") saveDraft(@Req() req: UserRequest, @Param("id") id: string, @Body() body: unknown) { return this.management.saveLabDraft(req.user.userId, id, parse(z.object({ code: z.string().max(100000), language: z.string().min(1).max(30) }).strict(), body)); }
 }

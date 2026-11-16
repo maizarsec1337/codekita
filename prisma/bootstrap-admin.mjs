@@ -43,7 +43,7 @@ try {
       if (user.passwordHash && await argon2.verify(user.passwordHash, password).catch(() => false)) {
         throw new Error("Choose a different password; no account was changed.");
       }
-      await db.user.update({ where: { id: user.id }, data: { username, passwordHash: hash } });
+      await db.user.update({ where: { id: user.id }, data: { username, passwordHash: hash, mustChangePassword: false, developmentBootstrap: false } });
       await db.session.deleteMany({ where: { userId: user.id } });
       return "Existing administrator credentials updated on explicit operator request; prior sessions revoked.";
     }

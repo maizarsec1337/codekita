@@ -69,13 +69,14 @@ export class AuthService {
     }
 
     const user = session.user;
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || (user.developmentBootstrap && this.configService.get("NODE_ENV") === "production")) {
       return null;
     }
 
     return {
       userId: user.id,
       email: user.email,
+      mustChangePassword: user.mustChangePassword,
       roles: (user.roles.map((ur: { role: { name: string } }) => ur.role.name) as unknown as RoleName[])
         .filter(
           (r): r is RoleName =>
@@ -127,6 +128,10 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
+    if (user.developmentBootstrap && this.configService.get("NODE_ENV") === "production") {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+
     if (!(await this.verifyPassword(user.passwordHash, password))) {
       throw new UnauthorizedException("Invalid credentials");
     }
@@ -149,7 +154,23 @@ export class AuthService {
     };
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.passwordHash || !await this.verifyPassword(user.passwordHash, currentPassword)) {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+    if (await this.verifyPassword(user.passwordHash, newPassword)) throw new BadRequestException("Choose a different password");
+    const passwordHash = await this.hashPassword(newPassword);
+    await this.prisma.$transaction(async db => {
+      const changed = await db.user.updateMany({ where: { id: userId, passwordHash: user.passwordHash, isActive: true }, data: { passwordHash, mustChangePassword: false, developmentBootstrap: false } });
+      if (changed.count !== 1) throw new UnauthorizedException("Account changed; sign in again");
+      await db.session.deleteMany({ where: { userId } });
+    });
+  }
+
   async register(email: string, password: string, firstName?: string, lastName?: string) {
+    const settings = await this.prisma.platformSetting.findUnique({ where: { id: "platform" } });
+    if (settings && !settings.registrationEnabled) throw new ForbiddenException("Registration is currently disabled");
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new BadRequestException("Email already registered");

@@ -14,6 +14,7 @@ export const academyApi = {
   complete: (module: string, section: string, answer: number) => request<{ completed: boolean; xpAwarded: number }>(`${lessonUrl(module, section)}/complete`, { method: "POST", body: JSON.stringify({ answer }) }),
   leaderboard: () => request<{ rank: number; name: string; xp: number }[]>("/leaderboard"),
   adminPaths: () => request<AdminPath[]>("/admin/paths"),
+  adminPathPage: (page: number, search: string, status: string) => request<{ items: AdminPath[]; total: number }>(`/admin/path-page?${new URLSearchParams({ page: String(page), search, status })}`),
   adminStarter: () => request<PathInput[]>("/admin/starter-content"),
   writePath: (input: PathInput, id?: string) => request(id ? `/admin/paths/${id}` : "/admin/paths", { method: id ? "PATCH" : "POST", body: JSON.stringify(input) }),
 };

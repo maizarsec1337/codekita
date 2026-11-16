@@ -32,7 +32,7 @@ export function LoginPage() {
             } | null)?.from;
             const isAdmin = result.user.roles.some(role => role === "ADMIN" || role === "SUPER_ADMIN");
             const destination = from?.startsWith("/") && !from.startsWith("//") && !from.startsWith("/admin") ? from : undefined;
-            navigate(isAdmin ? "/admin/dashboard" : destination ?? "/dashboard", { replace: true });
+            navigate(result.user.mustChangePassword ? "/change-password" : isAdmin ? "/admin/dashboard" : destination ?? "/dashboard", { replace: true });
         }
         else {
             const err = result.error as ApiError;

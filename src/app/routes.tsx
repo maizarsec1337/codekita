@@ -23,6 +23,7 @@ export const appRoutes: RouteObject[] = [
           { path: "challenges", element: <Navigate to="/labs" replace /> },
           { path: "leaderboard", lazy: async () => ({ Component: (await import("@/pages/community")).LeaderboardPage }) },
           { path: "login", lazy: async () => ({ Component: (await import("@/pages/login")).LoginPage }) },
+          { path: "change-password", lazy: async () => ({ Component: (await import("@/pages/change-password")).ChangePasswordPage }) },
           { path: "register", lazy: async () => ({ Component: (await import("@/pages/register")).RegisterPage }) },
           {
             path: "admin/dashboard",
@@ -32,6 +33,7 @@ export const appRoutes: RouteObject[] = [
             },
           },
           { path: "admin-dashboard", element: <Navigate to="/admin/dashboard" replace /> },
+          { path: "admin", element: <Navigate to="/admin/dashboard" replace /> },
         ],
       },
       {

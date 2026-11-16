@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
   CanActivate,
   ExecutionContext,
 } from "@nestjs/common";
@@ -42,6 +43,10 @@ export class AuthGuard implements CanActivate {
     const session = await this.authService.validateSession(token);
     if (!session) {
       throw new UnauthorizedException("Invalid or expired session");
+    }
+
+    if (session.mustChangePassword && !this.reflector.get<boolean>("allowPasswordChange", context.getHandler())) {
+      throw new ForbiddenException("Password change required");
     }
 
     request.user = session;

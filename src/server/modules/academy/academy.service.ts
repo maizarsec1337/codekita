@@ -119,7 +119,7 @@ export class AcademyService {
     const [enrollments, events, certificates] = await Promise.all([
       this.prisma.enrollment.findMany({ where: { userId, course: { isPublished: true } }, include: { course: { include: structure }, progress: true }, orderBy: { enrolledAt: "desc" } }),
       this.prisma.xpEvent.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
-      this.prisma.certificate.findMany({ where: { enrollment: { userId } }, orderBy: { issuedAt: "desc" } }),
+      this.prisma.certificate.findMany({ where: { enrollment: { userId }, revokedAt: null }, orderBy: { issuedAt: "desc" } }),
     ]);
     const xp = events.reduce((sum, event) => sum + event.amount, 0);
     const streak = streaks(events.map((event) => event.createdAt));
@@ -152,6 +152,11 @@ export class AcademyService {
 
   async adminList(actor: SessionPayload) {
     return this.prisma.course.findMany({ where: this.isAdmin(actor) ? {} : { instructorId: actor.userId }, include: structure, orderBy: { updatedAt: "desc" } });
+  }
+  async adminPage(actor: SessionPayload, page: number, search: string, status: "all" | "published" | "draft") {
+    const where: Prisma.CourseWhereInput = { ...(this.isAdmin(actor) ? {} : { instructorId: actor.userId }), ...(search ? { title: { contains: search, mode: "insensitive" } } : {}), ...(status === "all" ? {} : { isPublished: status === "published" }) };
+    const [items, total] = await this.prisma.$transaction([this.prisma.course.findMany({ where, include: structure, skip: (page - 1) * 25, take: 25, orderBy: [{ updatedAt: "desc" }, { id: "asc" }] }), this.prisma.course.count({ where })]);
+    return { items, total, page };
   }
 
   private isAdmin(actor: SessionPayload) { return actor.roles.some(role => role === "ADMIN" || role === "SUPER_ADMIN"); }

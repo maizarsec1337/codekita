@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, BadRequestException } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, BadRequestException, SetMetadata } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { AuthService } from "./auth.service";
 import { IsPublic } from "../../common/decorators/is-public.decorator";
 import { cookies, csrfToken } from "../../common/security";
+import type { SessionPayload } from "@codekita/shared";
 
 const credentials = z.object({ email: z.string().trim().min(1).max(254), password: z.string().min(8).max(256) });
 const registration = credentials.extend({ email: z.string().trim().email().max(254), firstName: z.string().trim().max(100).optional(), lastName: z.string().trim().max(100).optional() });
@@ -57,12 +58,25 @@ export class AuthController {
     return this.authenticated(result.token, reply);
   }
 
+  @SetMetadata("allowPasswordChange", true)
   @Get("me")
   me(@Req() request: FastifyRequest & { user: unknown }, @Res({ passthrough: true }) reply: FastifyReply) {
     reply.header("Cache-Control", "no-store");
     return { user: request.user };
   }
 
+  @SetMetadata("allowPasswordChange", true)
+  @Post("change-password")
+  async changePassword(@Body() body: unknown, @Req() request: FastifyRequest & { user: SessionPayload }, @Res({ passthrough: true }) reply: FastifyReply) {
+    const input = z.object({ currentPassword: z.string().min(8).max(256), newPassword: z.string().min(16).max(256).regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/).regex(/[^A-Za-z0-9]/) }).strict().safeParse(body);
+    if (!input.success) throw new BadRequestException("New password must be 16–256 characters and include uppercase, lowercase, number and symbol");
+    await this.auth.changePassword(request.user.userId, input.data.currentPassword, input.data.newPassword);
+    const name = this.config.get<string>("SESSION_NAME", "codekita_session");
+    reply.header("Set-Cookie", [this.cookie(name, "", 0), this.cookie("csrf_token", "", 0)]);
+    return { ok: true };
+  }
+
+  @SetMetadata("allowPasswordChange", true)
   @Post("logout")
   async logout(@Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply) {
     const name = this.config.get<string>("SESSION_NAME", "codekita_session");

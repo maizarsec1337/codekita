@@ -130,5 +130,6 @@ export const api = {
     logout: () => request("/auth/logout", { method: "POST" }),
 
     csrfToken: () => request("/auth/csrf-token"),
+    changePassword: (currentPassword: string, newPassword: string) => request("/auth/change-password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) }),
   },
 };

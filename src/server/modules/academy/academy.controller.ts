@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Req, ServiceUnavailableException } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, ServiceUnavailableException } from "@nestjs/common";
 import { z } from "zod";
 import { pathInputSchema, type SessionPayload } from "@codekita/shared";
 import { ManagementService } from "./management.service";
@@ -33,6 +33,7 @@ export class AcademyController {
   @IsPublic() @Get("labs") labs() { return this.management.labs(); }
   @Post("labs/:id/submissions") submit() { throw new ServiceUnavailableException("Code execution is disabled until an isolated, resource-limited runner is configured."); }
   @Roles("ADMIN", "SUPER_ADMIN") @Get("admin/paths") adminPaths(@Req() req: UserRequest) { return this.academy.adminList(req.user); }
+  @Roles("ADMIN", "SUPER_ADMIN") @Get("admin/path-page") adminPathPage(@Req() req: UserRequest, @Query("page") page = "1", @Query("search") search = "", @Query("status") status = "all") { return this.academy.adminPage(req.user, parse(z.coerce.number().int().min(1).max(100000), page), parse(z.string().trim().max(100), search), parse(z.enum(["all", "published", "draft"]), status)); }
   @Roles("ADMIN", "SUPER_ADMIN") @Get("admin/starter-content") starter() { return this.management.templates(); }
   @Roles("ADMIN", "SUPER_ADMIN") @Permissions("courses:write") @Post("admin/paths") create(@Req() req: UserRequest, @Body() body: unknown) { return this.academy.writePath(parse(pathInputSchema, body), req.user); }
   @Roles("ADMIN", "SUPER_ADMIN") @Permissions("courses:write") @Patch("admin/paths/:id") update(@Req() req: UserRequest, @Param("id", new ParseUUIDPipe()) id: string, @Body() body: unknown) { return this.academy.writePath(parse(pathInputSchema, body), req.user, id); }
