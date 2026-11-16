@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { parseEnv } from 'node:util';
 for (const file of ['.env.local', '.env']) if (existsSync(file)) {
   for (const [key, value] of Object.entries(parseEnv(readFileSync(file, 'utf8')))) process.env[key] ??= value;
@@ -11,4 +11,4 @@ try {
   report.connection = 'connected';
   report.existingApplicationTables = report.tables.filter(t => ['User', 'Course', 'Session', 'Role'].includes(t.table_name));
 } catch (error) { report.connection = 'failed'; report.code = /^P\d{4}$/.test(error?.code ?? '') ? error.code : 'DATABASE_ERROR'; }
-finally { await prisma.$disconnect(); writeFileSync('database-inspection.log', JSON.stringify(report, null, 2)); }
+finally { await prisma.$disconnect(); console.log(JSON.stringify(report, null, 2)); }

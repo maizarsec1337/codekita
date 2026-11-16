@@ -13,9 +13,9 @@ import type { Academy, PathSummary } from '@codekita/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/img/icon.jpg';
-import programmingIllustration from '@/assets/img/desain4-transparent.png';
-import cybersecurityIllustration from '@/assets/img/desain5-transparent.png';
-import aiIllustration from '@/assets/img/desain6-transparent.png';
+import programmingIllustration from '@/assets/img/desain4-transparent.webp';
+import cybersecurityIllustration from '@/assets/img/desain5-transparent.webp';
+import aiIllustration from '@/assets/img/desain6-transparent.webp';
 
 export const academies = {
   programming: {

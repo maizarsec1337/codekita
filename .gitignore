@@ -21,7 +21,11 @@ dist
 npm-debug.log*
 pnpm-debug.log*
 *.log
+*.log.*
 coverage
+.cache/
+*.tmp
+*.temp
 
 # IDE
 .vscode

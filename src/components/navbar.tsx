@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from '@/components/academy/shared';
@@ -11,48 +11,73 @@ import {
   SheetTrigger,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/language-switcher';
 const links = [
-  ['Explore', '/'],
-  ['Learning Paths', '/paths'],
   ['Academy', '/academy'],
-  ['Labs', '/labs'],
-  ['Leaderboard', '/leaderboard'],
+  ['Programming', '/paths?academy=programming'],
+  ['Cybersecurity', '/paths?academy=cybersecurity'],
+  ['AI Engineering', '/paths?academy=ai'],
+  ['Platform', '/paths'],
+  ['Resources', '/labs'],
+  ['About us', '/#about-codekita'],
 ];
 export function Navbar() {
   const { t } = useTranslation('navigation');
   const { user, isLoading } = useAuth();
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const workspace = user?.roles.some(role => role === 'ADMIN' || role === 'SUPER_ADMIN')
+    ? '/admin/dashboard'
+    : '/dashboard';
+  const currentUrl = `${location.pathname}${location.search}${location.hash}`;
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1280px)');
+    const closeOnDesktop = () => {
+      if (desktop.matches) setOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-      <div className="page-container flex h-[76px] items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 border-b border-[#29384b] bg-[#0b111d]">
+      <div className="mx-auto flex h-[76px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-8">
         <Logo />
-        <nav aria-label={t('Main navigation')} className="hidden items-center gap-5 lg:flex">
+        <nav
+          aria-label={t('Main navigation')}
+          className="hidden items-center gap-3 xl:flex 2xl:gap-4"
+        >
           {links.map(([label, href]) => (
-            <NavLink
-              end={href === '/'}
+            <Link
               key={href}
               to={href}
-              className={({ isActive }) =>
-                `motion-link text-[13px] font-medium transition-colors hover:text-foreground ${isActive ? 'text-foreground' : 'text-muted-foreground'}`
-              }
+              aria-current={currentUrl === href ? 'page' : undefined}
+              className="motion-link inline-flex min-h-11 items-center whitespace-nowrap text-xs font-medium text-slate-300 transition-colors hover:text-white"
             >
               {t(label)}
-            </NavLink>
+            </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <LanguageSwitcher className="hidden lg:inline-flex" />
+        <div className="flex shrink-0 items-center gap-2">
+          <LanguageSwitcher className="hidden 2xl:inline-flex" />
           {isLoading ? (
             <div
               className="h-9 w-20 animate-pulse rounded-lg bg-card"
               aria-label={t('Checking session')}
             />
           ) : user ? (
-            <Link to={user.roles.some(role => role === 'ADMIN' || role === 'SUPER_ADMIN') ? '/admin/dashboard' : '/dashboard'} className="motion-link flex items-center gap-2 text-sm">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-semibold text-primary">
+            <Link
+              to={workspace}
+              aria-label={t('My workspace')}
+              className="motion-link flex min-h-11 items-center gap-2 text-sm"
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-semibold text-primary"
+              >
                 {user.email[0].toUpperCase()}
               </span>
               <span className="hidden sm:inline">{t('My workspace')}</span>
@@ -61,14 +86,18 @@ export function Navbar() {
             <>
               <Link
                 to="/login"
-                className="motion-link hidden px-3 text-sm text-muted-foreground hover:text-foreground sm:block"
+                className="motion-link hidden min-h-11 items-center px-3 text-sm text-muted-foreground hover:text-foreground sm:inline-flex"
               >
                 {t('Log in')}
               </Link>
-              <Button size="sm" asChild>
+              <Button
+                size="sm"
+                className="hidden min-h-11 whitespace-nowrap min-[400px]:inline-flex"
+                asChild
+              >
                 <Link to="/register">
-                  {t('Get started')}
-                  <ArrowUpRight className="ml-2 h-4 w-4" />
+                  {t('Start learning')}
+                  <ArrowUpRight aria-hidden="true" className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </>
@@ -79,39 +108,46 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 aria-label={t('Open navigation')}
-                className="lg:hidden"
+                className="h-11 w-11 xl:hidden"
               >
-                <Menu size={21} />
+                <Menu aria-hidden="true" size={21} />
               </Button>
             </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
+            <SheetContent className="max-h-[100dvh]">
+              <SheetHeader className="shrink-0 pr-12">
                 <SheetTitle>{t('Explore CodeKita')}</SheetTitle>
                 <SheetDescription>
                   {t('Your next engineering milestone starts here.')}
                 </SheetDescription>
               </SheetHeader>
-              <nav aria-label={t('Mobile navigation')} className="flex flex-col gap-2 px-6">
+              <nav
+                aria-label={t('Mobile navigation')}
+                className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-6 pb-8"
+              >
                 {[
                   ...links,
+                  ['Leaderboard', '/leaderboard'],
                   ...(user
-                    ? [['Dashboard', user.roles.some(role => role === 'ADMIN' || role === 'SUPER_ADMIN') ? '/admin/dashboard' : '/dashboard']]
-                    : [
-                        ['Log in', '/login'],
-                        ['Create account', '/register'],
-                      ]),
+                    ? [['Dashboard', workspace]]
+                    : isLoading
+                      ? []
+                      : [
+                          ['Log in', '/login'],
+                          ['Create account', '/register'],
+                        ]),
                 ].map(([label, href]) => (
                   <Link
                     onClick={() => setOpen(false)}
-                    className="motion-link rounded-lg p-3 text-sm hover:bg-accent"
+                    className="motion-link flex min-h-11 shrink-0 items-center gap-3 rounded-lg p-3 text-sm hover:bg-accent"
                     key={href}
                     to={href}
+                    aria-current={currentUrl === href ? 'page' : undefined}
                   >
                     {t(label)}
-                    <ArrowUpRight size={14} className="ml-auto" />
+                    <ArrowUpRight aria-hidden="true" size={14} className="ml-auto shrink-0" />
                   </Link>
                 ))}
-                <LanguageSwitcher className="mt-4" />
+                <LanguageSwitcher className="mt-4 shrink-0" />
               </nav>
             </SheetContent>
           </Sheet>

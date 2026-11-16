@@ -5,8 +5,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  CheckCircle2,
-  ChevronRight,
   Code2,
   GitBranch,
   Layers3,
@@ -26,25 +24,34 @@ import { Button } from '@/components/ui/button';
 import { academies, CardSkeletons, DataState, PathCard } from '@/components/academy/shared';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import {
+  BuilderIllustration,
+  SkillsSection,
+  EcosystemSection,
+  ProductsSection,
+  SolutionsSection,
+  BenefitsSection,
+  ClosingSection,
+} from '@/components/home-sections';
 
 function LearningPreview() {
+  const { t } = useTranslation('common');
   const [answer, setAnswer] = useState<number>();
   return (
     <div className="panel overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
         <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
           <Terminal size={15} />
           interactive-preview.js
         </span>
         <span className="rounded bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">
-          TRY IT YOURSELF
+          {t('homePreviewTry')}
         </span>
       </div>
       <div className="grid md:grid-cols-2">
-        <div className="bg-background/50 p-6 sm:p-8">
+        <div className="min-w-0 bg-background/50 p-5 sm:p-8">
           <p className="mb-6 font-mono text-xs text-muted-foreground">
-            01{' '}
-            <span className="ml-4 text-codekita-purple">// Small steps. Real understanding.</span>
+            01 <span className="ml-4 text-codekita-purple">// {t('homePreviewComment')}</span>
           </p>
           <pre className="overflow-x-auto font-mono text-sm leading-8">
             <code>
@@ -58,19 +65,19 @@ function LearningPreview() {
           </pre>
           <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
             <LockKeyhole size={13} />
-            Knowledge preview · no code execution
+            {t('homePreviewNotice')}
           </div>
         </div>
-        <div className="border-t border-border p-6 sm:p-8 md:border-l md:border-t-0">
-          <p className="eyebrow mb-3">Knowledge check</p>
-          <h3 className="mb-5 text-lg">What does journey contain?</h3>
-          <fieldset className="space-y-3">
-            <legend className="sr-only">Choose the array produced by map</legend>
+        <div className="min-w-0 border-t border-border p-5 sm:p-8 md:border-l md:border-t-0">
+          <p className="eyebrow mb-3">{t('homePreviewEyebrow')}</p>
+          <h3 className="mb-5 text-lg">{t('homePreviewQuestion')}</h3>
+          <fieldset className="min-w-0 space-y-3">
+            <legend className="sr-only">{t('homePreviewLegend')}</legend>
             {['["LEARN", "BUILD"]', '["learn", "build"]', '"LEARN BUILD"'].map((option, index) => (
               <label
                 key={option}
                 className={cn(
-                  'flex cursor-pointer items-center gap-3 rounded-lg border p-3 font-mono text-xs transition-colors',
+                  'flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border p-3 font-mono text-xs transition-colors',
                   answer === index
                     ? 'border-primary/60 bg-primary/5'
                     : 'border-border hover:border-muted-foreground'
@@ -81,18 +88,18 @@ function LearningPreview() {
                   name="preview"
                   checked={answer === index}
                   onChange={() => setAnswer(index)}
-                  className="accent-[rgb(var(--ck-primary))]"
+                  className="shrink-0 accent-[rgb(var(--ck-primary))]"
                 />
-                {option}
+                <span className="break-all">{option}</span>
               </label>
             ))}
           </fieldset>
           <p className="mt-4 min-h-10 text-xs leading-5 text-muted-foreground" aria-live="polite">
             {answer === undefined
-              ? 'Choose an answer. A little curiosity goes a long way.'
+              ? t('homePreviewHint')
               : answer === 0
-                ? 'Correct! map returns a new array with each string transformed. Preview only — no XP is awarded.'
-                : 'Not quite. map transforms each item and returns a new array. Try again.'}
+                ? t('homePreviewCorrect')
+                : t('homePreviewIncorrect')}
           </p>
         </div>
       </div>
@@ -100,23 +107,27 @@ function LearningPreview() {
   );
 }
 function HeroWorkspace() {
+  const { t } = useTranslation('common');
   return (
     <div className="relative mx-auto w-full max-w-xl lg:ml-0">
       <div className="panel relative overflow-hidden shadow-ck-lg">
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div className="flex gap-1.5">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+          <div aria-hidden="true" className="flex shrink-0 gap-1.5">
             {[1, 2, 3].map(item => (
               <span key={item} className="h-2 w-2 rounded-full bg-border" />
             ))}
           </div>
-          <span className="flex items-center gap-2 font-mono text-[10px] tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
             <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary" />
-            YOUR ENGINEERING WORKSPACE
+            {t('homeWorkspaceLabel')}
           </span>
-          <LockKeyhole size={12} className="text-muted-foreground" />
+          <LockKeyhole aria-hidden="true" size={12} className="shrink-0 text-muted-foreground" />
         </div>
-        <div className="grid grid-cols-[48px_1fr] sm:grid-cols-[58px_1fr]">
-          <div className="flex flex-col items-center gap-5 border-r border-border bg-background/30 py-6">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-[42px_minmax(0,1fr)] sm:grid-cols-[48px_minmax(0,1fr)]">
+          <div
+            aria-hidden="true"
+            className="hidden flex-col items-center gap-5 border-r border-border bg-background/30 py-6 min-[400px]:flex"
+          >
             {[Terminal, Layers3, GitBranch, Target].map((Icon, index) => (
               <div
                 key={index}
@@ -129,39 +140,41 @@ function HeroWorkspace() {
               </div>
             ))}
           </div>
-          <div className="min-w-0 p-5 sm:p-7">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="min-w-0 p-4 sm:p-5">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
               <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Path overview
+                {t('homeWorkspaceOverview')}
               </p>
-              <span className="text-[10px] text-muted-foreground">Illustrative preview</span>
+              <span className="rounded border border-border px-2 py-1 text-[10px] text-muted-foreground">
+                {t('homeWorkspacePreview')}
+              </span>
             </div>
             <div className="mb-5 flex items-center gap-3">
-              <span className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary">
-                <Code2 size={24} />
+              <span className="shrink-0 rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary">
+                <Code2 aria-hidden="true" size={24} />
               </span>
               <div>
-                <p className="mb-1 text-[10px] text-primary">PROGRAMMING ACADEMY</p>
-                <h3 className="text-base sm:text-lg">From curiosity to capability.</h3>
+                <p className="mb-1 text-[10px] uppercase text-primary">Programming Academy</p>
+                <p className="text-base font-semibold sm:text-lg">{t('homeWorkspaceTitle')}</p>
               </div>
             </div>
             <div>
               {[
                 {
-                  title: 'Understand the foundations',
-                  description: 'Build your mental model',
+                  title: t('homeWorkspaceStep1'),
+                  description: t('homeWorkspaceStep1Description'),
                   icon: Check,
                   active: false,
                 },
                 {
-                  title: 'Put knowledge into practice',
-                  description: 'Learn by solving a real problem',
+                  title: t('homeWorkspaceStep2'),
+                  description: t('homeWorkspaceStep2Description'),
                   icon: Play,
                   active: true,
                 },
                 {
-                  title: 'Prove what you know',
-                  description: 'Validate. Reflect. Progress.',
+                  title: t('homeWorkspaceStep3'),
+                  description: t('homeWorkspaceStep3Description'),
                   icon: LockKeyhole,
                   active: false,
                 },
@@ -178,7 +191,7 @@ function HeroWorkspace() {
                         : 'border-border bg-card text-muted-foreground'
                     )}
                   >
-                    <step.icon size={13} />
+                    <step.icon aria-hidden="true" size={13} />
                   </span>
                   <div
                     className={cn(
@@ -189,10 +202,10 @@ function HeroWorkspace() {
                     <p className="text-xs font-medium sm:text-sm">{step.title}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{step.description}</p>
                     {step.active && (
-                      <div className="mt-3 flex items-center gap-2 text-[10px] text-primary">
+                      <div className="mt-3 flex items-center gap-2 text-[10px] uppercase text-primary">
                         <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        YOUR NEXT MILESTONE
-                        <ArrowRight size={12} className="ml-auto" />
+                        {t('homeWorkspaceNext')}
+                        <ArrowRight aria-hidden="true" size={12} className="ml-auto shrink-0" />
                       </div>
                     )}
                   </div>
@@ -209,14 +222,14 @@ function HeroWorkspace() {
           </div>
         </div>
       </div>
-      <div className="absolute -bottom-5 right-4 flex items-center gap-3 rounded-xl border border-border bg-codekita-surface-elevated px-4 py-3 shadow-ck-lg">
+      <div className="relative mx-3 -mt-2 flex items-center gap-3 rounded-xl border border-border bg-codekita-surface-elevated px-4 py-3 shadow-ck-lg sm:absolute sm:-bottom-5 sm:right-4 sm:mx-0 sm:max-w-[calc(100%-2rem)]">
         <span className="rounded-lg bg-codekita-purple/10 p-2 text-codekita-purple">
-          <Sparkles size={17} />
+          <Sparkles aria-hidden="true" size={17} />
         </span>
         <div>
-          <p className="text-xs font-medium">Built for the builder in you.</p>
+          <p className="text-xs font-medium">{t('homeWorkspaceBadge')}</p>
           <p className="mt-0.5 text-[10px] text-muted-foreground">
-            One meaningful milestone at a time.
+            {t('homeWorkspaceBadgeDescription')}
           </p>
         </div>
       </div>
@@ -225,17 +238,18 @@ function HeroWorkspace() {
 }
 function CatalogueSection() {
   const { t } = useTranslation('courses');
+  const { t: home } = useTranslation('common');
   const paths = useQuery({ queryKey: ['paths'], queryFn: academyApi.paths });
   return (
     <section className="border-y border-border bg-card/30 py-20">
       <div className="page-container">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow mb-3">A clear way forward</p>
-            <h2 className="section-heading">Less guessing. More building.</h2>
+            <p className="eyebrow mb-3">{home('homeCatalogueEyebrow')}</p>
+            <h2 className="section-heading">{home('homeCatalogueTitle')}</h2>
           </div>
           <Link to="/paths" className="flex items-center gap-2 text-sm text-primary">
-            Explore all paths <ArrowRight size={16} />
+            {home('homeCatalogueExplore')} <ArrowRight aria-hidden="true" size={16} />
           </Link>
         </div>
         {paths.isPending ? (
@@ -248,7 +262,7 @@ function CatalogueSection() {
             retry={() => void paths.refetch()}
           />
         ) : paths.data.length ? (
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {paths.data.slice(0, 3).map(path => (
               <PathCard key={path.id} path={path} />
             ))}
@@ -262,142 +276,219 @@ function CatalogueSection() {
 }
 export function HomePage() {
   const { user } = useAuth();
+  const { t } = useTranslation('common');
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0" />
-        <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0" />
-        <div className="page-container relative grid items-center gap-16 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-28">
-          <Reveal>
+      <section
+        aria-labelledby="home-heading"
+        className="relative isolate overflow-hidden border-b border-[#26364b] bg-[#0b111d] text-[#f8fafc]"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,#0b111d_30%,#111b2b_70%,#202c3f_100%)]"
+        />
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 1440 800"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          fill="none"
+        >
+          <path d="M1080 0H1440V800H640Z" fill="#91a9c9" fillOpacity=".035" />
+          <path d="M1320 0 880 800M1000 0 560 800" stroke="#91a9c9" strokeOpacity=".08" />
+        </svg>
+        <div className="page-container relative grid items-center gap-6 pb-10 pt-14 sm:gap-10 sm:py-20 lg:min-h-[720px] lg:grid-cols-[1.08fr_1fr] lg:gap-10 lg:py-16">
+          <div className="min-w-0">
             <div>
-              <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Your next chapter starts here
-                <ChevronRight size={12} />
+              <p className="mb-7 flex items-center gap-3 font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+                <span aria-hidden="true" className="h-px w-9 shrink-0 bg-primary" />
+                {t('homeEyebrow')}
               </p>
-              <h1 className="max-w-2xl text-[clamp(2.75rem,5vw,4.7rem)] font-semibold leading-[1.09] tracking-[-0.055em]">
-                Build Skills.
-                <br />
-                Solve Challenges.
-                <br />
-                <span className="text-primary">Become an Engineer.</span>
+              <h1
+                id="home-heading"
+                lang="en"
+                className="max-w-2xl text-[clamp(2.5rem,5.3vw,4.5rem)] font-semibold leading-[1.06] tracking-[-0.045em]"
+              >
+                Build Your Future <span className="block text-primary">in Technology</span>
               </h1>
-              <p className="mt-7 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-                Pelajari Programming, Cybersecurity, dan AI Engineering melalui pembelajaran
-                terstruktur, praktik interaktif, dan tantangan berbasis kemampuan.
+              <p className="mt-7 max-w-xl text-base leading-7 text-[#b3c3d8] sm:text-lg sm:leading-8">
+                {t('homeHeroDescription')}
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button size="lg" asChild>
+              <div className="mt-9 flex flex-col gap-3 min-[480px]:flex-row min-[480px]:flex-wrap">
+                <Button size="lg" className="min-h-14 px-6" asChild>
                   <Link to={user ? '/paths' : '/register'}>
-                    Mulai Belajar
-                    <ArrowRight size={16} className="ml-3" />
+                    {t('footerStartLearning')}
+                    <ArrowRight aria-hidden="true" size={16} className="ml-3" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link to="/paths">Jelajahi Learning Paths</Link>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="min-h-14 border-[#34445b] bg-[#202c3f]/50 px-6 text-white hover:bg-[#2a3a50] hover:text-white"
+                  asChild
+                >
+                  <Link to="/#academies">{t('homeHeroExplore')}</Link>
                 </Button>
               </div>
-              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] text-muted-foreground">
-                {['Learn at your pace', 'Practice with purpose', 'Progress that matters'].map(
-                  item => (
-                    <span className="flex items-center gap-1.5" key={item}>
-                      <CheckCircle2 size={13} className="text-primary" />
-                      {item}
-                    </span>
-                  )
-                )}
-              </div>
+              <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-xs leading-5 text-slate-300">
+                {[
+                  { icon: GitBranch, label: 'homeBenefitPaths' },
+                  { icon: Terminal, label: 'homeBenefitPractice' },
+                  { icon: Target, label: 'homeBenefitProgress' },
+                ].map(item => (
+                  <li key={item.label} className="flex items-center gap-2">
+                    <item.icon aria-hidden="true" size={14} className="text-primary" />
+                    {t(item.label)}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </Reveal>
+          </div>
           <Reveal delay={100}>
-            <HeroWorkspace />
-          </Reveal>
-        </div>
-        <div className="page-container grid gap-5 border-t border-border/60 py-6 text-xs text-muted-foreground sm:grid-cols-3">
-          {[
-            { icon: Code2, text: 'Build working software' },
-            { icon: ShieldCheck, text: 'Understand and defend systems' },
-            { icon: Sparkles, text: 'Engineer intelligent applications' },
-          ].map(item => (
-            <div key={item.text} className="flex items-center justify-center gap-3">
-              <item.icon size={16} className="text-foreground" />
-              {item.text}
+            <div className="relative isolate flex min-h-[320px] items-center justify-center py-12 sm:min-h-[460px] lg:min-h-[560px]">
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                viewBox="0 0 600 600"
+                className="pointer-events-none absolute inset-0 h-full w-full"
+                fill="none"
+              >
+                <defs>
+                  <linearGradient
+                    id="hero-facet"
+                    x1="80"
+                    y1="60"
+                    x2="520"
+                    y2="540"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stopColor="#33445b" />
+                    <stop offset="1" stopColor="#0b111d" />
+                  </linearGradient>
+                  <pattern id="hero-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1" fill="#91a9c9" opacity=".35" />
+                  </pattern>
+                </defs>
+                <path d="M300 20 580 300 300 580 20 300Z" fill="url(#hero-facet)" opacity=".65" />
+                <path d="M300 56 544 300 300 544 56 300Z" stroke="#91a9c9" strokeOpacity=".25" />
+                <path d="M300 95 505 300 300 505 95 300Z" stroke="#b8f34a" strokeOpacity=".38" />
+                <path d="M300 20 580 300 300 580 20 300Z" fill="url(#hero-dots)" />
+                <path d="M60 385 385 60M215 545 545 215" stroke="#b8f34a" strokeOpacity=".35" />
+              </svg>
+              <BuilderIllustration className="relative w-full max-w-[620px]" />
             </div>
-          ))}
+          </Reveal>
         </div>
       </section>
-      <section id="academies" className="page-container py-20 sm:py-24">
+      <SkillsSection />
+      <EcosystemSection />
+      <ProductsSection />
+      <SolutionsSection />
+      <BenefitsSection />
+      <section
+        aria-labelledby="academies-heading"
+        className="page-container scroll-mt-24 py-16 sm:py-24"
+      >
         <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="eyebrow mb-3">Three disciplines. One destination.</p>
-            <h2 className="section-heading">Find your engineering edge.</h2>
+            <p className="eyebrow mb-3">{t('homeAcademyEyebrow')}</p>
+            <h2 id="academies-heading" className="section-heading">
+              {t('homeAcademyTitle')}
+            </h2>
           </div>
-          <p className="muted max-w-sm">
-            Choose your discipline. Build depth, connect ideas, and turn knowledge into capability.
-          </p>
+          <p className="muted max-w-sm">{t('homeAcademyIntro')}</p>
         </div>
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 lg:grid-cols-3">
           {Object.entries(academies).map(([key, academy], index) => (
             <Reveal key={key} delay={index * 65} className="h-full">
               <Link
                 to={`/paths?academy=${key}`}
-                className="panel motion-card group relative block h-full p-7"
+                className="panel motion-card group relative flex h-full flex-col overflow-hidden border-[#2b3b50] bg-[#111b2b] p-6 sm:p-8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
               >
-                <img
-                  src={academy.illustration}
-                  alt={academy.illustrationAlt}
-                  className="mb-5 h-56 w-full object-contain sm:h-60"
-                />
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 200 150"
+                  className={cn(
+                    'pointer-events-none absolute right-0 top-0 h-40 w-52 opacity-10',
+                    academy.color
+                  )}
+                  fill="none"
+                >
+                  <path d="M110 -25 210 75 110 175 10 75Z" stroke="currentColor" />
+                  <path d="M140 -25 240 75 140 175 40 75Z" stroke="currentColor" />
+                  <path d="M170 -25 270 75 170 175 70 75Z" fill="currentColor" fillOpacity=".3" />
+                </svg>
+                <span
+                  className={cn(
+                    'relative mb-8 inline-flex w-fit rounded-xl border border-border p-3',
+                    academy.color,
+                    academy.background
+                  )}
+                >
+                  <academy.icon size={28} strokeWidth={1.7} aria-hidden="true" />
+                </span>
                 <ArrowUpRight
                   size={17}
+                  aria-hidden="true"
                   className="motion-arrow absolute right-7 top-7 text-muted-foreground"
                 />
-                <h3 className="text-xl">
-                  {academy.name}
-                  <br />
-                  <span className="text-muted-foreground">Academy</span>
-                </h3>
-                <p className="muted mt-4">{academy.description}</p>
-                <div className="mt-6 flex flex-wrap gap-2">
+                <h3 className="relative text-2xl">{academy.name}</h3>
+                <p className="mt-4 flex-1 text-sm leading-7 text-[#b3c3d8]">
+                  {t(`homeAcademyDescription-${key}`)}
+                </p>
+                <ul className="mt-6 flex flex-wrap gap-2">
                   {academy.tags.map(tag => (
-                    <span
+                    <li
                       key={tag}
-                      className="rounded border border-border bg-background/40 px-2 py-1 text-[10px] text-muted-foreground"
+                      className="rounded-md border border-border bg-background/30 px-2.5 py-1.5 text-[11px] text-slate-300"
                     >
                       {tag}
-                    </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
+                <span
+                  className={cn(
+                    'mt-8 flex items-center gap-2 border-t border-[#2b3b50] pt-5 text-sm font-medium',
+                    academy.color
+                  )}
+                >
+                  {t('homeExploreAcademy')} <ArrowRight size={16} aria-hidden="true" />
+                </span>
               </Link>
             </Reveal>
           ))}
         </div>
       </section>
       <CatalogueSection />
-      <section className="page-container py-20 sm:py-24">
+      <section
+        aria-labelledby="approach-heading"
+        className="page-container scroll-mt-24 py-20 sm:py-24"
+      >
         <div className="mb-12 text-center">
-          <p className="eyebrow mb-3">The CodeKita approach</p>
-          <h2 className="section-heading">Don’t just watch. Work it out.</h2>
-          <p className="muted mt-4">
-            A deliberate journey from understanding to independent problem-solving.
-          </p>
+          <p className="eyebrow mb-3">{t('homeApproachEyebrow')}</p>
+          <h2 id="approach-heading" className="section-heading">
+            {t('homeApproachTitle')}
+          </h2>
+          <p className="muted mt-4">{t('homeApproachDescription')}</p>
         </div>
         <div className="mb-16 grid gap-8 md:grid-cols-3">
           {[
             {
               icon: GitBranch,
-              title: 'Choose your direction',
-              text: 'Follow a structured path with clear prerequisites and skills to work toward.',
+              title: t('homeApproachStep1'),
+              text: t('homeApproachStep1Description'),
             },
             {
               icon: Terminal,
-              title: 'Learn by doing',
-              text: 'Read, experiment, and check your understanding through focused exercises.',
+              title: t('homeApproachStep2'),
+              text: t('homeApproachStep2Description'),
             },
             {
               icon: Target,
-              title: 'Earn your next milestone',
-              text: 'Pass assessments, validate your progress, and build a record of your skills.',
+              title: t('homeApproachStep3'),
+              text: t('homeApproachStep3Description'),
             },
           ].map((step, index) => (
             <div key={step.title} className="relative border-t border-border pt-6">
@@ -412,16 +503,15 @@ export function HomePage() {
         </div>
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow mb-3">A small taste of the workspace</p>
-            <h2 className="section-heading">Curiosity, meet interaction.</h2>
+            <p className="eyebrow mb-3">{t('homeInteractiveEyebrow')}</p>
+            <h2 className="section-heading">{t('homeInteractiveTitle')}</h2>
           </div>
-          <p className="muted max-w-xs">
-            Read a snippet. Form a hypothesis.
-            <br />
-            See whether it holds up.
-          </p>
+          <p className="muted max-w-xs">{t('homeInteractiveDescription')}</p>
         </div>
-        <LearningPreview />
+        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
+          <HeroWorkspace />
+          <LearningPreview />
+        </div>
       </section>
       <section className="page-container pb-20">
         <div className="grid gap-6 lg:grid-cols-2">
@@ -429,24 +519,27 @@ export function HomePage() {
             <span className="mb-5 inline-flex rounded-xl bg-codekita-secondary/10 p-3 text-codekita-secondary">
               <ShieldCheck size={24} />
             </span>
-            <p className="eyebrow mb-3">Practice with intention</p>
-            <h2 className="text-2xl">A safe space to work things out.</h2>
-            <p className="muted mt-4">
-              Programming problems, defensive log reviews, and model evaluation exercises. Preview
-              workspaces are clearly labeled; live execution requires an isolated runner.
-            </p>
+            <p className="eyebrow mb-3">{t('homeLabsEyebrow')}</p>
+            <h2 className="text-2xl">{t('homeLabsTitle')}</h2>
+            <p className="muted mt-4">{t('homeLabsDescription')}</p>
             <div className="mt-6 space-y-3">
-              {['Transform a dataset', 'Investigate an access log', 'Evaluate a classifier'].map(
+              {['homeLabProgramming', 'homeLabCybersecurity', 'homeLabAi'].map(
                 (challenge, index) => (
                   <Link
                     key={challenge}
                     to={`/labs?academy=${['programming', 'cybersecurity', 'ai'][index]}`}
-                    className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary/40"
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary/40"
                   >
-                    <Code2 size={15} className="text-muted-foreground" />
-                    {challenge}
-                    <span className="ml-auto text-[10px] text-muted-foreground">PREVIEW</span>
-                    <ArrowUpRight size={14} />
+                    <Code2
+                      aria-hidden="true"
+                      size={15}
+                      className="shrink-0 text-muted-foreground"
+                    />
+                    <span className="min-w-0 flex-1 basis-32">{t(challenge)}</span>
+                    <span className="ml-auto text-[10px] text-muted-foreground">
+                      {t('homePreviewLabel')}
+                    </span>
+                    <ArrowUpRight aria-hidden="true" size={14} className="shrink-0" />
                   </Link>
                 )
               )}
@@ -456,17 +549,14 @@ export function HomePage() {
             <span className="mb-5 inline-flex w-fit rounded-xl bg-codekita-purple/10 p-3 text-codekita-purple">
               <Users size={24} />
             </span>
-            <p className="eyebrow mb-3">Your effort has a story</p>
-            <h2 className="text-2xl">Make your progress visible.</h2>
-            <p className="muted mt-4">
-              Build a learning streak, earn assessment-backed XP, unlock milestones, and join a
-              privacy-conscious community leaderboard.
-            </p>
-            <div className="my-7 grid grid-cols-3 gap-3">
+            <p className="eyebrow mb-3">{t('homeCommunityEyebrow')}</p>
+            <h2 className="text-2xl">{t('homeCommunityTitle')}</h2>
+            <p className="muted mt-4">{t('homeCommunityDescription')}</p>
+            <div className="my-7 grid grid-cols-1 gap-3 min-[400px]:grid-cols-3">
               {[
-                { icon: Zap, text: 'Validated XP' },
-                { icon: Target, text: 'Milestones' },
-                { icon: ShieldCheck, text: 'Certificates' },
+                { icon: Zap, text: t('homeCommunityXp') },
+                { icon: Target, text: t('homeCommunityMilestones') },
+                { icon: ShieldCheck, text: t('homeCommunityCertificates') },
               ].map(item => (
                 <div className="rounded-xl border border-border p-3 text-center" key={item.text}>
                   <item.icon className="mx-auto mb-3 text-codekita-purple" size={22} />
@@ -478,35 +568,13 @@ export function HomePage() {
               to="/leaderboard"
               className="mt-auto flex items-center gap-2 text-sm text-primary"
             >
-              Meet the community
+              {t('homeCommunityExplore')}
               <ArrowRight size={16} />
             </Link>
           </div>
         </div>
       </section>
-      <section className="page-container pb-20">
-        <div className="panel relative overflow-hidden px-6 py-14 text-center sm:py-20">
-          <span className="mb-5 inline-flex rounded-full border border-primary/30 bg-background p-3 text-primary">
-            <Terminal size={25} />
-          </span>
-          <p className="eyebrow mb-4">Built for what comes next</p>
-          <h2 className="text-3xl tracking-tight sm:text-5xl">
-            Your next skill starts with
-            <br />
-            <span className="text-primary">one small step.</span>
-          </h2>
-          <p className="muted mx-auto mb-8 mt-5 max-w-md">
-            No shortcuts. No empty promises. Just a better way to learn, practice, and become the
-            engineer you want to be.
-          </p>
-          <Button size="lg" asChild>
-            <Link to={user ? '/paths' : '/register'}>
-              Start your journey
-              <ArrowRight size={16} className="ml-3" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+      <ClosingSection signedIn={!!user} />
     </>
   );
 }

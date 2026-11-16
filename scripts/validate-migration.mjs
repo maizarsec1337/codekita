@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { parseEnv } from 'node:util';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -27,6 +27,6 @@ for (const key of process.argv.slice(2)) {
   if (!tasks[key]) throw new Error('Unknown validation task');
   const result = spawnSync(process.execPath, tasks[key], { cwd: root, env, encoding: 'utf8', timeout: key === 'build' ? 600000 : 180000 });
   report.push({ task: key, exitCode: result.status, timedOut: result.error?.code === 'ETIMEDOUT', output: redact((result.stdout ?? '') + (result.stderr ?? '')) });
-  writeFileSync(new URL('../validation-' + process.argv.slice(2).join('-') + '.log', import.meta.url), JSON.stringify(report, null, 2));
 }
+console.log(JSON.stringify(report, null, 2));
 process.exitCode = report.every(r => r.exitCode === 0) ? 0 : 1;
